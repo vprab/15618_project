@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1756540 on Mon Jan 23 19:11:19 MST 2017
+# IP Build 1755317 on Mon Jan 23 20:30:07 MST 2017
+# Start of session at: Tue Apr 18 11:40:13 2017
+# Process ID: 24223
+# Current directory: /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1
+# Command line: vivado -log binary_counter.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source binary_counter.tcl -notrace
+# Log file: /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/binary_counter.vdi
+# Journal file: /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/vivado.jou
+#-----------------------------------------------------------
+source binary_counter.tcl -notrace

@@ -1,0 +1,444 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1756540 on Mon Jan 23 19:11:19 MST 2017
+# IP Build 1755317 on Mon Jan 23 20:30:07 MST 2017
+# Start of session at: Tue Apr 18 11:31:28 2017
+# Process ID: 21343
+# Current directory: /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1
+# Command line: vivado -log binary_counter.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source binary_counter.tcl -notrace
+# Log file: /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/binary_counter.vdi
+# Journal file: /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/vivado.jou
+#-----------------------------------------------------------
+source binary_counter.tcl -notrace
+Design is defaulting to srcset: sources_1
+Design is defaulting to constrset: constrs_1
+INFO: [Project 1-479] Netlist was created with Vivado 2016.4
+INFO: [Device 21-403] Loading part xc7z020clg484-1
+INFO: [Project 1-570] Preparing netlist for logic optimization
+Parsing XDC File [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc]
+WARNING: [Vivado 12-584] No ports matched 'led[7]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:1]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:1]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[6]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:2]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:2]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[5]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:3]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:3]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[4]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:4]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:4]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[3]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:5]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:5]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[2]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:6]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:6]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[1]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:7]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:7]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[0]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:8]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:8]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[7]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:9]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:9]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[6]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:10]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:10]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[5]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:11]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:11]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[4]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:12]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:12]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[3]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:13]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:13]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[2]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:14]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:14]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[1]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:15]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:15]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[0]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:16]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:16]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[0]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:17]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:17]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[1]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:18]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:18]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[2]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:19]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:19]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[3]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:20]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:20]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[4]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:21]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:21]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[5]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:22]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:22]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[6]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:23]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:23]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'led[7]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:24]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:24]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[0]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:25]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:25]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[1]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:26]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:26]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[2]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:27]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:27]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[3]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:28]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:28]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[4]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:29]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:29]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[5]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:30]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:30]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[6]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:31]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:31]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+WARNING: [Vivado 12-584] No ports matched 'switch[7]'. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:32]
+CRITICAL WARNING: [Common 17-55] 'set_property' expects at least one object. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:32]
+Resolution: If [get_<value>] was used to populate the object, check to make sure this command returns at least one valid object.
+INFO: [Timing 38-35] Done setting XDC timing constraints. [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc:37]
+set_switching_activity: Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 1713.672 ; gain = 410.508 ; free physical = 1297 ; free virtual = 14208
+Finished Parsing XDC File [/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.srcs/constrs_1/new/top.xdc]
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+link_design: Time (s): cpu = 00:00:10 ; elapsed = 00:00:11 . Memory (MB): peak = 1713.672 ; gain = 707.961 ; free physical = 1297 ; free virtual = 14208
+INFO: [Vivado_Tcl 4-424] Cannot write hardware definition file as there are no IPI block design hardware handoff files present
+Command: opt_design
+Attempting to get a license for feature 'Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Implementation' and/or device 'xc7z020'
+Running DRC as a precondition to command opt_design
+
+Starting DRC Task
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Project 1-461] DRC finished with 0 Errors
+INFO: [Project 1-462] Please refer to the DRC report (report_drc) for more information.
+
+Time (s): cpu = 00:00:00.05 ; elapsed = 00:00:00.05 . Memory (MB): peak = 1721.676 ; gain = 8.004 ; free physical = 1292 ; free virtual = 14204
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+
+Starting Logic Optimization Task
+Implement Debug Cores | Checksum: c4cf4246
+
+Phase 1 Retarget
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+INFO: [Opt 31-49] Retargeted 0 cell(s).
+Phase 1 Retarget | Checksum: c4cf4246
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1721.676 ; gain = 0.000 ; free physical = 1292 ; free virtual = 14204
+
+Phase 2 Constant propagation
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+INFO: [Opt 31-10] Eliminated 0 cells.
+Phase 2 Constant propagation | Checksum: c4cf4246
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1721.676 ; gain = 0.000 ; free physical = 1292 ; free virtual = 14204
+
+Phase 3 Sweep
+INFO: [Opt 31-12] Eliminated 0 unconnected nets.
+INFO: [Opt 31-11] Eliminated 0 unconnected cells.
+Phase 3 Sweep | Checksum: c4cf4246
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1721.676 ; gain = 0.000 ; free physical = 1292 ; free virtual = 14204
+
+Phase 4 BUFG optimization
+INFO: [Opt 31-12] Eliminated 0 unconnected nets.
+INFO: [Opt 31-11] Eliminated 0 unconnected cells.
+Phase 4 BUFG optimization | Checksum: c4cf4246
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1721.676 ; gain = 0.000 ; free physical = 1292 ; free virtual = 14204
+
+Starting Connectivity Check Task
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1721.676 ; gain = 0.000 ; free physical = 1292 ; free virtual = 14204
+Ending Logic Optimization Task | Checksum: c4cf4246
+
+Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1721.676 ; gain = 0.000 ; free physical = 1292 ; free virtual = 14204
+
+Starting Power Optimization Task
+INFO: [Pwropt 34-132] Skipping clock gating for clocks with a period < 2.00 ns.
+Ending Power Optimization Task | Checksum: c4cf4246
+
+Time (s): cpu = 00:00:00.01 ; elapsed = 00:00:00 . Memory (MB): peak = 1721.676 ; gain = 0.000 ; free physical = 1292 ; free virtual = 14204
+INFO: [Common 17-83] Releasing license: Implementation
+22 Infos, 32 Warnings, 32 Critical Warnings and 0 Errors encountered.
+opt_design completed successfully
+INFO: [Common 17-1381] The checkpoint '/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/binary_counter_opt.dcp' has been generated.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Coretcl 2-168] The results of DRC are in file /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/binary_counter_drc_opted.rpt.
+INFO: [Chipscope 16-241] No debug cores found in the current design.
+Before running the implement_debug_core command, either use the Set Up Debug wizard (GUI mode)
+or use the create_debug_core and connect_debug_core Tcl commands to insert debug cores into the design.
+Command: place_design
+Attempting to get a license for feature 'Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Implementation' and/or device 'xc7z020'
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 4-198] DRC finished with 0 Errors
+INFO: [Vivado_Tcl 4-199] Please refer to the DRC report (report_drc) for more information.
+Running DRC as a precondition to command place_design
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 4-198] DRC finished with 0 Errors
+INFO: [Vivado_Tcl 4-199] Please refer to the DRC report (report_drc) for more information.
+
+Starting Placer Task
+INFO: [Place 30-611] Multithreading enabled for place_design using a maximum of 2 CPUs
+
+Phase 1 Placer Initialization
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1729.680 ; gain = 0.000 ; free physical = 1292 ; free virtual = 14203
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1729.680 ; gain = 0.000 ; free physical = 1292 ; free virtual = 14203
+
+Phase 1.1 IO Placement/ Clock Placement/ Build Placer Device
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+Phase 1.1 IO Placement/ Clock Placement/ Build Placer Device | Checksum: 126c7a547
+
+Time (s): cpu = 00:00:00.21 ; elapsed = 00:00:00.21 . Memory (MB): peak = 1730.680 ; gain = 1.000 ; free physical = 1292 ; free virtual = 14203
+
+Phase 1.2 Build Placer Netlist Model
+Phase 1.2 Build Placer Netlist Model | Checksum: 1fc386f72
+
+Time (s): cpu = 00:00:00.23 ; elapsed = 00:00:00.23 . Memory (MB): peak = 1738.312 ; gain = 8.633 ; free physical = 1284 ; free virtual = 14195
+
+Phase 1.3 Constrain Clocks/Macros
+Phase 1.3 Constrain Clocks/Macros | Checksum: 1fc386f72
+
+Time (s): cpu = 00:00:00.23 ; elapsed = 00:00:00.23 . Memory (MB): peak = 1738.312 ; gain = 8.633 ; free physical = 1284 ; free virtual = 14195
+Phase 1 Placer Initialization | Checksum: 1fc386f72
+
+Time (s): cpu = 00:00:00.23 ; elapsed = 00:00:00.23 . Memory (MB): peak = 1738.312 ; gain = 8.633 ; free physical = 1284 ; free virtual = 14195
+
+Phase 2 Final Placement Cleanup
+Phase 2 Final Placement Cleanup | Checksum: 1fc386f72
+
+Time (s): cpu = 00:00:00.23 ; elapsed = 00:00:00.24 . Memory (MB): peak = 1738.312 ; gain = 8.633 ; free physical = 1284 ; free virtual = 14195
+INFO: [Place 30-281] No place-able instance is found; design doesn't contain any instance or all instances are placed
+Ending Placer Task | Checksum: 126c7a547
+
+Time (s): cpu = 00:00:00.23 ; elapsed = 00:00:00.24 . Memory (MB): peak = 1738.312 ; gain = 8.633 ; free physical = 1284 ; free virtual = 14195
+INFO: [Common 17-83] Releasing license: Implementation
+37 Infos, 32 Warnings, 32 Critical Warnings and 0 Errors encountered.
+place_design completed successfully
+Writing placer database...
+Writing XDEF routing.
+Writing XDEF routing logical nets.
+Writing XDEF routing special nets.
+Write XDEF Complete: Time (s): cpu = 00:00:00.01 ; elapsed = 00:00:00.01 . Memory (MB): peak = 1738.312 ; gain = 0.000 ; free physical = 1282 ; free virtual = 14195
+INFO: [Common 17-1381] The checkpoint '/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/binary_counter_placed.dcp' has been generated.
+report_io: Time (s): cpu = 00:00:00.05 ; elapsed = 00:00:00.06 . Memory (MB): peak = 1738.312 ; gain = 0.000 ; free physical = 1283 ; free virtual = 14194
+report_utilization: Time (s): cpu = 00:00:00.01 ; elapsed = 00:00:00.01 . Memory (MB): peak = 1738.312 ; gain = 0.000 ; free physical = 1283 ; free virtual = 14194
+report_control_sets: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1738.312 ; gain = 0.000 ; free physical = 1283 ; free virtual = 14194
+Command: route_design
+Attempting to get a license for feature 'Implementation' and/or device 'xc7z020'
+INFO: [Common 17-349] Got license for feature 'Implementation' and/or device 'xc7z020'
+Running DRC as a precondition to command route_design
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Vivado_Tcl 4-198] DRC finished with 0 Errors
+INFO: [Vivado_Tcl 4-199] Please refer to the DRC report (report_drc) for more information.
+
+
+Starting Routing Task
+INFO: [Route 35-254] Multithreading enabled for route_design using a maximum of 2 CPUs
+Checksum: PlaceDB: b52591ed ConstDB: 0 ShapeSum: 71a2135a RouteDB: 0
+
+Phase 1 Build RT Design
+Phase 1 Build RT Design | Checksum: 16b888628
+
+Time (s): cpu = 00:00:14 ; elapsed = 00:00:12 . Memory (MB): peak = 1870.984 ; gain = 132.672 ; free physical = 1148 ; free virtual = 14058
+
+Phase 2 Router Initialization
+
+Phase 2.1 Create Timer
+Phase 2.1 Create Timer | Checksum: 16b888628
+
+Time (s): cpu = 00:00:14 ; elapsed = 00:00:12 . Memory (MB): peak = 1875.984 ; gain = 137.672 ; free physical = 1144 ; free virtual = 14054
+
+Phase 2.2 Fix Topology Constraints
+Phase 2.2 Fix Topology Constraints | Checksum: 16b888628
+
+Time (s): cpu = 00:00:14 ; elapsed = 00:00:12 . Memory (MB): peak = 1882.984 ; gain = 144.672 ; free physical = 1137 ; free virtual = 14047
+
+Phase 2.3 Pre Route Cleanup
+Phase 2.3 Pre Route Cleanup | Checksum: 16b888628
+
+Time (s): cpu = 00:00:14 ; elapsed = 00:00:12 . Memory (MB): peak = 1882.984 ; gain = 144.672 ; free physical = 1137 ; free virtual = 14047
+ Number of Nodes with overlaps = 0
+
+Phase 2.4 Update Timing
+Phase 2.4 Update Timing | Checksum: 181074778
+
+Time (s): cpu = 00:00:14 ; elapsed = 00:00:12 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+Phase 2 Router Initialization | Checksum: 181074778
+
+Time (s): cpu = 00:00:14 ; elapsed = 00:00:12 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 3 Initial Routing
+ Number of Nodes with overlaps = 0
+Phase 3 Initial Routing | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 4 Rip-up And Reroute
+
+Phase 4.1 Global Iteration 0
+
+Phase 4.1.1 Update Timing
+Phase 4.1.1 Update Timing | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+Phase 4.1 Global Iteration 0 | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 4.2 Global Iteration 1
+
+Phase 4.2.1 Update Timing
+Phase 4.2.1 Update Timing | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+Phase 4.2 Global Iteration 1 | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 4.3 Global Iteration 2
+
+Phase 4.3.1 Update Timing
+Phase 4.3.1 Update Timing | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+Phase 4.3 Global Iteration 2 | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 4.4 Global Iteration 3
+
+Phase 4.4.1 Update Timing
+Phase 4.4.1 Update Timing | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+Phase 4.4 Global Iteration 3 | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 4.5 Global Iteration 4
+
+Phase 4.5.1 Update Timing
+Phase 4.5.1 Update Timing | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+Phase 4.5 Global Iteration 4 | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+Phase 4 Rip-up And Reroute | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 5 Delay and Skew Optimization
+
+Phase 5.1 Delay CleanUp
+Phase 5.1 Delay CleanUp | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 5.2 Clock Skew Optimization
+Phase 5.2 Clock Skew Optimization | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+Phase 5 Delay and Skew Optimization | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 6 Post Hold Fix
+
+Phase 6.1 Hold Fix Iter
+
+Phase 6.1.1 Update Timing
+Phase 6.1.1 Update Timing | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+Phase 6.1 Hold Fix Iter | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+Phase 6 Post Hold Fix | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 7 Route finalize
+
+Router Utilization Summary
+  Global Vertical Routing Utilization    = 0 %
+  Global Horizontal Routing Utilization  = 0 %
+  Routable Net Status*
+  *Does not include unroutable nets such as driverless and loadless.
+  Run report_route_status for detailed report.
+  Number of Failed Nets               = 0
+  Number of Unrouted Nets             = 0
+  Number of Partially Routed Nets     = 0
+  Number of Node Overlaps             = 0
+
+Phase 7 Route finalize | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1889.039 ; gain = 150.727 ; free physical = 1131 ; free virtual = 14040
+
+Phase 8 Verifying routed nets
+
+ Verification completed successfully
+Phase 8 Verifying routed nets | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1891.039 ; gain = 152.727 ; free physical = 1129 ; free virtual = 14038
+
+Phase 9 Depositing Routes
+Phase 9 Depositing Routes | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1891.039 ; gain = 152.727 ; free physical = 1129 ; free virtual = 14038
+
+Phase 10 Post Router Timing
+Phase 10 Post Router Timing | Checksum: 181074778
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1891.039 ; gain = 152.727 ; free physical = 1129 ; free virtual = 14038
+INFO: [Route 35-16] Router Completed Successfully
+
+Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1891.039 ; gain = 152.727 ; free physical = 1129 ; free virtual = 14038
+
+Routing Is Done.
+INFO: [Common 17-83] Releasing license: Implementation
+45 Infos, 32 Warnings, 32 Critical Warnings and 0 Errors encountered.
+route_design completed successfully
+route_design: Time (s): cpu = 00:00:15 ; elapsed = 00:00:13 . Memory (MB): peak = 1891.312 ; gain = 153.000 ; free physical = 1128 ; free virtual = 14038
+Writing placer database...
+Writing XDEF routing.
+Writing XDEF routing logical nets.
+Writing XDEF routing special nets.
+Write XDEF Complete: Time (s): cpu = 00:00:00.01 ; elapsed = 00:00:00.01 . Memory (MB): peak = 1891.312 ; gain = 0.000 ; free physical = 1127 ; free virtual = 14038
+INFO: [Common 17-1381] The checkpoint '/home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/binary_counter_routed.dcp' has been generated.
+INFO: [DRC 23-27] Running DRC with 2 threads
+INFO: [Coretcl 2-168] The results of DRC are in file /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/binary_counter_drc_routed.rpt.
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [DRC 23-133] Running Methodology with 2 threads
+INFO: [Coretcl 2-1520] The results of Report Methodology are in file /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/binary_counter_methodology_drc_routed.rpt.
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+INFO: [Timing 38-91] UpdateTimingParams: Speed grade: -1, Delay Type: min_max.
+INFO: [Timing 38-191] Multithreading enabled for timing update using a maximum of 2 CPUs
+INFO: [Timing 38-35] Done setting XDC timing constraints.
+Command: report_power -file binary_counter_power_routed.rpt -pb binary_counter_power_summary_routed.pb -rpx binary_counter_power_routed.rpx
+Running Vector-less Activity Propagation...
+
+Finished Running Vector-less Activity Propagation
+55 Infos, 32 Warnings, 32 Critical Warnings and 0 Errors encountered.
+report_power completed successfully
+INFO: [Common 17-206] Exiting Vivado at Tue Apr 18 11:32:01 2017...

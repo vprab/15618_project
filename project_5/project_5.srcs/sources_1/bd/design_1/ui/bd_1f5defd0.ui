@@ -1,0 +1,27 @@
+{
+   guistr: "# # String gsaved with Nlview 6.6.5b  2016-09-06 bk=1.3687 VDI=39 GEI=35 GUI=JA:1.6
+#  -string -flagsOSRD
+preplace port DDR -pg 1 -y -260 -defaultsOSRD
+preplace port FIXED_IO -pg 1 -y -240 -defaultsOSRD
+preplace inst blk_mem_gen_0 -pg 1 -lvl 2 -y -410 -defaultsOSRD
+preplace inst rst_ps7_0_100M -pg 1 -lvl 4 -y -380 -defaultsOSRD
+preplace inst axi_mem_intercon -pg 1 -lvl 5 -y -340 -defaultsOSRD
+preplace inst axi_bram_ctrl_0 -pg 1 -lvl 1 -y -460 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 3 -y -160 -defaultsOSRD
+preplace netloc processing_system7_0_DDR 1 3 6 820J -210 NJ -210 NJ -210 NJ -210 NJ -210 1640J
+preplace netloc processing_system7_0_M_AXI_GP0 1 3 2 NJ -180 1200
+preplace netloc axi_bram_ctrl_0_BRAM_PORTA 1 1 1 130
+preplace netloc rst_ps7_0_100M_peripheral_aresetn 1 0 5 -170 -270 NJ -270 390J -300 860J -290 1210
+preplace netloc axi_bram_ctrl_0_BRAM_PORTB 1 1 1 130
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 3 1 840
+preplace netloc axi_mem_intercon_M00_AXI 1 0 6 -180 -280 NJ -280 400J -290 850J -220 NJ -220 1500
+preplace netloc processing_system7_0_FIXED_IO 1 3 6 810J -200 NJ -200 NJ -200 NJ -200 NJ -200 1650
+preplace netloc processing_system7_0_FCLK_CLK0 1 0 5 -190 -30 NJ -30 400 -30 830 -30 1220
+preplace netloc rst_ps7_0_100M_interconnect_aresetn 1 4 1 N
+levelinfo -pg 1 -210 -20 280 610 1030 1360 1520 1570 1620 1670 -top -660 -bot 1210
+",
+}
+{
+   da_axi4_cnt: "1",
+   da_ps7_cnt: "1",
+}

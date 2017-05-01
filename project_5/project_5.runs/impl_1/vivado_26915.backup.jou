@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2016.4 (64-bit)
+# SW Build 1756540 on Mon Jan 23 19:11:19 MST 2017
+# IP Build 1755317 on Mon Jan 23 20:30:07 MST 2017
+# Start of session at: Tue Apr 18 11:46:21 2017
+# Process ID: 26915
+# Current directory: /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1
+# Command line: vivado -log project_5.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source project_5.tcl -notrace
+# Log file: /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/project_5.vdi
+# Journal file: /home/ricson/data/Vivado/2016.4/bin/project_5/project_5.runs/impl_1/vivado.jou
+#-----------------------------------------------------------
+source project_5.tcl -notrace
