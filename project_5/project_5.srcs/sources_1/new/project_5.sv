@@ -184,7 +184,8 @@ module run_channels #(parameter ARR_WIDTH = 8, parameter ARR_HEIGHT = 8, paramet
 endmodule: run_channels
 
 module relu (input TYPE x, output TYPE y);
-    assign y = x < 0 ? 0 : x;
+    assign y[31:22] = 10'b0;
+    assign y[21:0] = x[31:10];
 endmodule: relu
 
 module relu_arr #(parameter ARR_WIDTH = 8, parameter ARR_HEIGHT = 8)

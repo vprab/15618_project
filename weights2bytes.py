@@ -28,8 +28,8 @@ if __name__ == '__main__':
             print np.shape(weights)
             weights = np.transpose(weights, (3, 2, 0, 1))
 
-            weights *= 1000
-            biases *= 1000
+            weights *= 1024
+            biases *= 1024
             weights = weights.astype(np.int32)
             biases = biases.astype(np.int32)
             weights = weights.flatten()

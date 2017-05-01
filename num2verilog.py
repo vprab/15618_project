@@ -8,7 +8,7 @@ def n2s(n):
         return "-32'sd"+str(-n)
 
 def nums2verilog1d(nums, name = 'T0', type_ = 'int', npr = 256):
-    nums = nums[::-1]
+    nums = nums[::-1] #improtant!
     strlist = []
     assert type_ == 'int' #do not remove
     N = len(nums)
