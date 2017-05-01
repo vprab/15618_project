@@ -75,7 +75,7 @@ module pad #(parameter H = 8, parameter W = 8, parameter M = 1)
                 if(i < M | i >= H+M | j < M | j >= W+M)
                     assign padded[i][j] = 0;
                 else 
-                    assign padded[i][j] = arr[i-M][j-M];                   
+                    assign padded[i][j] = arr[i-M][j-M];
             end
         end    
     endgenerate
@@ -184,8 +184,9 @@ module run_channels #(parameter ARR_WIDTH = 8, parameter ARR_HEIGHT = 8, paramet
 endmodule: run_channels
 
 module relu (input TYPE x, output TYPE y);
-    assign y[31:22] = 10'b0;
-    assign y[21:0] = x[31:10];
+    //assign y[31:22] = 10'b0;
+    //assign y[21:0] = x[31:10];
+    assign y = x > 0 ? x >> 10 : 32'b0;
 endmodule: relu
 
 module relu_arr #(parameter ARR_WIDTH = 8, parameter ARR_HEIGHT = 8)
@@ -345,7 +346,7 @@ module test_conv_ind();
     assign bias = 2;
 endmodule
 
-module top2 #(parameter outD = 10, parameter N = 1)
+module top #(parameter outD = 10, parameter N = 1)
     (output TYPE pred[outD-1:0]);
     
     genvar i, j, k;
@@ -518,4 +519,4 @@ module top2 #(parameter outD = 10, parameter N = 1)
     //assign max = queue.pop_front();
     //assign res = pred.find_first_index(max).pop_front();
     
-endmodule: top2
+endmodule: top
