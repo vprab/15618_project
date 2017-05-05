@@ -521,17 +521,8 @@ module top2 #(parameter outD = 10, parameter N = 1)
     
 endmodule: top2
 
-module conv_ind_opt #(parameter N = 1)
-    (input TYPE params[9*N-1:0],
-     input TYPE weights[9*N-1:0],
-     input TYPE bias[N-1:0],
-     output TYPE res[N-1:0]);
-     
-    genvar i;
-    generate for (i = 0; i < N; i++) begin
-        conv_ind #(9) c(params[9*(i+1)-1 -: 9], weights[9*(i+1)-1 -: 9], bias[i], res[i]);
-    end endgenerate
-endmodule: conv_ind_opt
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 module pool_fn_opt #(parameter N = 1)
     (input TYPE vals[4*N-1:0],
@@ -556,15 +547,33 @@ module test_pool_fn_opt #(parameter N = 4) ();
 
 endmodule: test_pool_fn_opt
 
-module conv_siso #(parameter H = 8, parameter W = 8, parameter N = 4)
+module conv_block #(parameter N = 1, S = 3)
+    (input TYPE params[S*S*N-1:0],
+     input TYPE weights[S*S*N-1:0],
+     input TYPE bias[N-1:0],
+     output TYPE res[N-1:0]);
+     
+    genvar i;
+    generate for (i = 0; i < N; i++) begin
+        conv_ind #(S*S) c(params[S*S*(i+1)-1 -: S*S], weights[S*S*(i+1)-1 -: S*S], bias[i], res[i]);
+    end endgenerate
+    
+endmodule
+
+module conv_siso #(parameter H = 8, parameter W = 8, parameter N = 4, S = 3)
     (input logic clk,
      input logic reset,
      input TYPE arr[H-1:0][W-1:0],
      input TYPE weights[9-1:0],
+     input TYPE bias,
+     input TYPE conv_block_out[N-1:0],
+     output TYPE conv_block_in[S*S*N-1:0],
+     output TYPE conv_block_weights[S*S*N-1:0],
+     output TYPE conv_block_biases[N-1:0],
      output TYPE out[H-1:0][W-1:0],
-     output logic done);
+     output logic done); 
      
-    //padding logic must be inlined into this module
+     //put padding logic into this module
     
 endmodule
 
@@ -597,14 +606,14 @@ module setzero2d #(parameter H = 8, parameter W = 8)
             end
         end
     endgenerate 
-
 endmodule 
 
-module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter N = 4)
+module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter N = 4, parameter S = 3)
     (input logic clk,
      input logic reset,
      input TYPE arr[D-1:0][H-1:0][W-1:0],
-     input TYPE weights[D-1:0][9-1:0],
+     input TYPE weights[D-1:0][S*S-1:0],
+     input TYPE bias,
      output TYPE out[H-1:0][W-1:0],
      output logic done);
 
@@ -612,16 +621,16 @@ module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
     assign done = (i == D);
     
     TYPE siso_arr[H-1:0][W-1:0];
-    TYPE siso_weights[9-1:0];
+    TYPE siso_weights[S*S-1:0];
 
     TYPE siso_out[H-1:0][W-1:0];
     TYPE tmp[H-1:0][W-1:0];
     add2d #(H,W) A(siso_out, out, tmp);
     
     logic siso_done;  
-    conv_siso #(H, W, N) SISO(clk, siso_reset, siso_arr, siso_weights, siso_out, siso_done);     
+    conv_siso #(H, W, N, S) SISO(clk, siso_reset, siso_arr, siso_weights, bias, siso_out, siso_done);     
     assign siso_reset = reset | siso_done;
-    setzero2d S(reset, out);
+    setzero2d SZ(reset, out);
 
     always_ff @(posedge clk, posedge reset) begin
         if (reset) begin            
@@ -636,11 +645,12 @@ module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
     
 endmodule
 
-module conv_mimo #(parameter H = 8, parameter W = 8, parameter D = 3, parameter K = 3, parameter N = 4)
+module conv_mimo #(parameter H = 8, parameter W = 8, parameter D = 3, parameter K = 3, parameter N = 4, S = 3)
     (input logic clk,
      input logic reset,
      input TYPE arr[D-1:0][H-1:0][W-1:0],
-     input TYPE weights[K-1:0][D-1:0][9-1:0],
+     input TYPE weights[K-1:0][D-1:0][S*S-1:0],
+     input TYPE biases[K-1:0],
      output TYPE out[K-1:0][H-1:0][W-1:0],
      output logic done);
      
@@ -649,9 +659,10 @@ module conv_mimo #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
     
     logic miso_reset;
     TYPE miso_weights[D-1:0][9-1:0];
+    TYPE miso_bias;
     TYPE miso_out[H-1:0][W-1:0];
     logic miso_done;
-    conv_miso #(H, W, D, N) MISO(clk, miso_reset, arr, miso_weights, miso_out, miso_done);
+    conv_miso #(H, W, D, N, S) MISO(clk, miso_reset, arr, miso_weights, miso_bias, miso_out, miso_done);
     assign miso_reset = reset | miso_done;
     
     always_ff @(posedge clk, posedge reset) begin
@@ -659,10 +670,34 @@ module conv_mimo #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
             i <= 0;
         end else if (~done & miso_done) begin
             miso_weights <= weights[i];
+            miso_bias <= biases[i];
             out[i] <= miso_out;
             i <= i+1;
         end
     end
+endmodule
+
+module relu_block #(parameter N = 4)
+    (input TYPE inp[N-1:0],
+     output TYPE out[N-1:0]);
+
+    genvar i;
+    generate for (i = 0; i < N; i++) begin
+        relu R(inp[i],out[i]);
+    end endgenerate
+endmodule
+
+module relu_layer #(parameter H = 8, parameter W = 8, parameter D = 4, parameter N = 4)
+    (input clk,
+     input reset,
+     input TYPE relu_block_out,
+     output TYPE relu_block_in,
+     input TYPE arr[D-1:0][H-1:0][W-1:0],
+     output TYPE out[D-1:0][H-1:0][W-1:0],
+     output logic done);
+          
+    //maybe do this in place?
+
 endmodule
 
 module pool_opt #(parameter H = 8, parameter W = 8, parameter N = 4)
@@ -750,6 +785,30 @@ module pool #(parameter H = 8, parameter W = 8)
     endgenerate
 endmodule: pool
 
+/*
+module CRblock #(parameter H = 8, 
+                 parameter W = 8, 
+                 parameter D = 3, 
+                 parameter K = 3, 
+                 parameter DO_RELU = 1)
+    (input TYPE arr[D-1:0][H-1:0][W-1:0],
+     input TYPE weights[K-1:0][9*D-1:0],
+     input TYPE bias[K-1:0],
+     output TYPE res[K-1:0][H-1:0][W-1:0]);
+     
+    TYPE pad_arr[K-1:0][H-1:0][W-1:0];
+    pad3d #(H, W, K, CONV_MARGIN) p(arr, pad_arr);
+    
+    TYPE conv_arr[NUM_KERNELS-1:0][ARR_HEIGHT-1:0][ARR_WIDTH-1:0];
+    conv_channels #(ARR_WIDTH+CONV_MARGIN*2, ARR_HEIGHT+CONV_MARGIN*2, CONV_SIZE, CONV_MARGIN, NUM_CHANNELS, NUM_KERNELS) c(pad_arr, weights, bias, conv_arr);
+    
+    if(DO_RELU)
+        relu_arr_3d #(ARR_WIDTH, ARR_HEIGHT, NUM_KERNELS) r(conv_arr, res);
+    else
+        assign res = conv_arr;
+        
+endmodule: run_channels
+*/
 
 module network_opt #(parameter inH = 32, parameter inW = 32, parameter inD = 3, outD = 10)
     (input TYPE img[inD-1:0][inH-1:0][inW-1:0],
@@ -774,45 +833,33 @@ module network_opt #(parameter inH = 32, parameter inW = 32, parameter inD = 3, 
      output TYPE pred[outD-1:0]);
     
     TYPE res1[8-1:0][inH-1:0][inW-1:0];
-    run_channels #(inW, inH, 3, 1, inD, 16) r1(img, weights1, bias1, res1);
-    
     TYPE res1_pooled[8-1:0][inH/2 - 1:0][inW/2 - 1:0];
-    pool3d #(inH, inW, 8) p1(res1, res1_pooled);
-    
     TYPE res2[16-1:0][inH/2-1:0][inW/2-1:0];
-    run_channels #(inW, inH, 3, 1, 8, 16) r2(res1_pooled, weights2, bias2, res2);
-    
-    TYPE res2_pooled[16-1:0][inH/2/2 - 1:0][inW/2/2 - 1:0];
-    pool3d #(inH/2, inW/2, 16) p2(res2, res2_pooled);
-    
-    TYPE res3[32-1:0][inH/2/2 - 1:0][inW/2/2 - 1:0];
-    run_channels #(inW/2, inH/2, 3, 1, 16, 32) r3(res2_pooled, weights3, bias3, res3);
-    
-    TYPE res3_pooled[32-1:0][inH/2/2/2-1:0][inW/2/2/2-1:0];
-    pool3d #(inH/2/2, inW/2/2, 32) p3(res3, res3_pooled);
-    
-    TYPE res4[16-1:0][inH/2/2/2 - 1:0][inW/2/2/2 - 1:0];
-    run_channels #(inW/2/2/2, inH/2/2/2, 1, 0, 32, 16) r4(res3_pooled, weights4, bias4, res4); 
-    
-    TYPE res5[32-1:0][inH/2/2/2 - 1:0][inW/2/2/2 - 1:0];
-    run_channels #(inW/2/2/2, inH/2/2/2, 3, 1, 16, 32) r5(res4, weights5, bias5, res5);
-    
-    TYPE res5_pooled[32-1:0][inH/2/2/2/2-1:0][inW/2/2/2/2-1:0];
-    pool3d #(inH/2/2/2, inW/2/2/2, 32) p5(res5, res5_pooled);
-    
-    TYPE res6[16-1:0][inH/2/2/2/2 - 1:0][inW/2/2/2/2 - 1:0];
-    run_channels #(inW/2/2/2/2, inH/2/2/2/2, 1, 0, 32, 16) r6(res5_pooled, weights6, bias6, res6);
-        
-    TYPE res7[32-1:0][inH/2/2/2/2 - 1:0][inW/2/2/2/2 - 1:0];
-    run_channels #(inW/2/2/2/2, inH/2/2/2/2, 3, 1, 16, 32) r7(res6, weights7, bias7, res7);
-    
-    TYPE res7_pooled[32-1:0][inH/2/2/2/2/2-1:0][inW/2/2/2/2/2-1:0];
-    pool3d #(inH/2/2/2/2, inW/2/2/2/2, 32) p7(res7, res7_pooled);
-    
-    TYPE res8[16-1:0][inH/2/2/2/2/2 - 1:0][inW/2/2/2/2/2 - 1:0];
-    run_channels #(inW/2/2/2/2/2, inH/2/2/2/2/2, 1, 0, 32, 16) r8(res7_pooled, weights8, bias8, res8);  
-    
+    TYPE res2_pooled[16-1:0][inH/4 - 1:0][inW/4 - 1:0];
+    TYPE res3[32-1:0][inH/4 - 1:0][inW/4 - 1:0];
+    TYPE res3_pooled[32-1:0][inH/8-1:0][inW/8-1:0];
+    TYPE res4[16-1:0][inH/8 - 1:0][inW/8 - 1:0];
+    TYPE res5[32-1:0][inH/8 - 1:0][inW/8 - 1:0];
+    TYPE res5_pooled[32-1:0][inH/16-1:0][inW/16-1:0];
+    TYPE res6[16-1:0][inH/16 - 1:0][inW/16 - 1:0];
+    TYPE res7[32-1:0][inH/16 - 1:0][inW/16 - 1:0];
+    TYPE res7_pooled[32-1:0][inH/32-1:0][inW/32-1:0];
+    TYPE res8[16-1:0][inH/32 - 1:0][inW/32 - 1:0];
     TYPE pred_unshaped[outD-1:0][0:0][0:0];
+    
+    run_channels #(inW, inH, 3, 1, inD, 16) r1(img, weights1, bias1, res1); 
+    pool3d #(inH, inW, 8) p1(res1, res1_pooled);
+    run_channels #(inW, inH, 3, 1, 8, 16) r2(res1_pooled, weights2, bias2, res2);
+    pool3d #(inH/2, inW/2, 16) p2(res2, res2_pooled);
+    run_channels #(inW/2, inH/2, 3, 1, 16, 32) r3(res2_pooled, weights3, bias3, res3);
+    pool3d #(inH/2/2, inW/2/2, 32) p3(res3, res3_pooled);
+    run_channels #(inW/2/2/2, inH/2/2/2, 1, 0, 32, 16) r4(res3_pooled, weights4, bias4, res4); 
+    run_channels #(inW/2/2/2, inH/2/2/2, 3, 1, 16, 32) r5(res4, weights5, bias5, res5);
+    pool3d #(inH/2/2/2, inW/2/2/2, 32) p5(res5, res5_pooled);
+    run_channels #(inW/2/2/2/2, inH/2/2/2/2, 1, 0, 32, 16) r6(res5_pooled, weights6, bias6, res6);
+    run_channels #(inW/2/2/2/2, inH/2/2/2/2, 3, 1, 16, 32) r7(res6, weights7, bias7, res7);
+    pool3d #(inH/2/2/2/2, inW/2/2/2/2, 32) p7(res7, res7_pooled);
+    run_channels #(inW/2/2/2/2/2, inH/2/2/2/2/2, 1, 0, 32, 16) r8(res7_pooled, weights8, bias8, res8);  
     run_channels #(inW/2/2/2/2/2, inH/2/2/2/2/2, 1, 0, 64, 10, 0) r11(res8, weights9, bias9, pred_unshaped);
     
     genvar chan;
@@ -960,3 +1007,148 @@ module top();
     end
     
 endmodule
+
+/*
+module use_y
+    (input logic doit,
+     input TYPE y[8-1:0][4-1:0][32-1:0][32-1:0],
+     output TYPE z[8-1:0][4-1:0][32-1:0][32-1:0]);
+     
+    genvar i, j, k, l;
+    generate
+        for(i = 0; i < 8; i++) begin
+            for(j = 0; j < 4; j++) begin
+                for(k = 0; k < 32; k++) begin
+                    for(l = 0; l < 32; l++) begin
+                        always_ff @(posedge doit) begin
+                            z[i][j][k][l] <= y[i][j][k][l] + 1;
+                        end
+                    end
+                end
+            end
+        end
+    endgenerate 
+endmodule
+
+module use_z
+    (input logic doit,
+     input TYPE z[32-1:0][32-1:0][8-1:0][4-1:0],
+     output TYPE y[32-1:0][32-1:0][8-1:0][4-1:0]);
+     
+    genvar i, j, k, l;
+    generate
+        for(i = 0; i < 32; i++) begin
+            for(j = 0; j < 32; j++) begin
+                for(k = 0; k < 8; k++) begin
+                    for(l = 0; l < 4; l++) begin
+                        always_ff @(posedge doit) begin
+                            y[i][j][k][l] <= z[i][j][k][l] - 1;
+                        end
+                    end
+                end
+            end
+        end
+    endgenerate 
+endmodule
+
+module sz1d
+    (input logic doit,
+     output TYPE arr[32768-1:0]);
+    
+    genvar i;
+    generate
+        for(i = 0; i < 32768; i++) begin
+            always_ff @(posedge doit) begin
+                arr[i] <= 0;
+            end
+        end
+    endgenerate 
+endmodule
+
+module reshape_1
+    (output TYPE x[32-1:0][32-1:0][8-1:0][4-1:0],
+     input TYPE x_[32768-1:0]);
+     
+    genvar i;
+     generate
+         for(i = 0; i < 32768; i++) begin
+            assign x[(i>>10)%32][(i>>5)%32][(i>>2)%8][i%4] = x_[i];
+         end
+     endgenerate 
+
+endmodule
+
+module reshape_2
+    (output TYPE x[8-1:0][4-1:0][32-1:0][32-1:0],
+     input TYPE x_[32768-1:0]);
+     
+    genvar i;
+     generate
+         for(i = 0; i < 32768; i++) begin
+            assign x[(i>>12)%8][(i>>10)%4][(i>>5)%32][i%32] = x_[i];
+         end
+     endgenerate 
+
+endmodule
+
+module reshape_test();
+    
+    TYPE y[32768-1:0];
+    TYPE z[32768-1:0];
+    
+    TYPE yr1[32-1:0][32-1:0][8-1:0][4-1:0];
+    TYPE yr2[8-1:0][4-1:0][32-1:0][32-1:0];
+    reshape_1 ry1(yr1, y);
+    reshape_2 ry2(yr2, y);
+    
+    TYPE zr1[32-1:0][32-1:0][8-1:0][4-1:0];
+    TYPE zr2[8-1:0][4-1:0][32-1:0][32-1:0];
+    reshape_1 rz1(zr1, z);
+    reshape_2 rz2(zr2, z);
+    
+    logic clz;
+    logic cly;   
+    logic doz;
+    logic doy;
+    
+    sz1d CZ(clz, z);
+    use_y UY(doy, yr2, zr2);
+    use_z UZ(doz, yr1, zr1);
+    
+    initial begin
+        doz = 0;
+        doy = 0;
+        clz = 1;
+        cly = 1;
+        #10
+        clz = 0;
+        cly = 0;
+        #10
+        doz = 1;
+        doy = 0;
+        #10
+        doz = 0;
+        doy = 1;
+        #10
+        doz = 1;
+        doy = 0;
+        #10
+        doz = 0;
+        doy = 1;
+        #10
+        doz = 1;
+        doy = 0;
+        #10
+        doz = 0;
+        doy = 1;
+        #10
+        doz = 1;
+        doy = 0;
+        #10
+        doz = 0;
+        doy = 1;
+        #10
+        $finish;
+    end
+endmodule
+*/
