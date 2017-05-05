@@ -346,7 +346,7 @@ module test_conv_ind();
     assign bias = 2;
 endmodule
 
-module top #(parameter outD = 10, parameter N = 1)
+module top2 #(parameter outD = 10, parameter N = 1)
     (output TYPE pred[outD-1:0]);
     
     genvar i, j, k;
@@ -519,7 +519,7 @@ module top #(parameter outD = 10, parameter N = 1)
     //assign max = queue.pop_front();
     //assign res = pred.find_first_index(max).pop_front();
     
-endmodule: top
+endmodule: top2
 
 module conv_ind_opt #(parameter N = 1)
     (input TYPE params[9*N-1:0],
@@ -532,7 +532,6 @@ module conv_ind_opt #(parameter N = 1)
         conv_ind #(9) c(params[9*(i+1)-1 -: 9], weights[9*(i+1)-1 -: 9], bias[i], res[i]);
     end endgenerate
 endmodule: conv_ind_opt
-
 
 module pool_fn_opt #(parameter N = 1)
     (input TYPE vals[4*N-1:0],
@@ -556,6 +555,115 @@ module test_pool_fn_opt #(parameter N = 4) ();
     pool_fn_opt #(N) p(.*);
 
 endmodule: test_pool_fn_opt
+
+module conv_siso #(parameter H = 8, parameter W = 8, parameter N = 4)
+    (input logic clk,
+     input logic reset,
+     input TYPE arr[H-1:0][W-1:0],
+     input TYPE weights[9-1:0],
+     output TYPE out[H-1:0][W-1:0],
+     output logic done);
+     
+    //padding logic must be inlined into this module
+    
+endmodule
+
+module add2d #(parameter H = 8, parameter W = 8)
+    (input TYPE a[H-1:0][W-1:0],
+     input TYPE b[H-1:0][W-1:0],
+     output TYPE c[H-1:0][W-1:0]);
+     
+    genvar i,j;
+    generate
+        for(i = 0; i < H; i++) begin
+            for(j = 0; j < W; j++) begin
+                assign c[i][j] = a[i][j]+b[i][j];
+            end
+        end
+    endgenerate 
+endmodule
+
+module setzero2d #(parameter H = 8, parameter W = 8)
+    (input logic reset,
+     output TYPE arr[H-1:0][W-1:0]);
+     
+    genvar i, j;
+    generate
+        for(i = 0; i < H; i++) begin
+            for(j = 0; j < W; j++) begin
+                always_ff @(posedge reset) begin
+                    arr[i][j] <= 0;
+                end
+            end
+        end
+    endgenerate 
+
+endmodule 
+
+module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter N = 4)
+    (input logic clk,
+     input logic reset,
+     input TYPE arr[D-1:0][H-1:0][W-1:0],
+     input TYPE weights[D-1:0][9-1:0],
+     output TYPE out[H-1:0][W-1:0],
+     output logic done);
+
+    int i = 0;
+    assign done = (i == D);
+    
+    TYPE siso_arr[H-1:0][W-1:0];
+    TYPE siso_weights[9-1:0];
+
+    TYPE siso_out[H-1:0][W-1:0];
+    TYPE tmp[H-1:0][W-1:0];
+    add2d #(H,W) A(siso_out, out, tmp);
+    
+    logic siso_done;  
+    conv_siso #(H, W, N) SISO(clk, siso_reset, siso_arr, siso_weights, siso_out, siso_done);     
+    assign siso_reset = reset | siso_done;
+    setzero2d S(reset, out);
+
+    always_ff @(posedge clk, posedge reset) begin
+        if (reset) begin            
+            i <= 0;
+        end else if (~done & siso_done) begin
+            siso_weights <= weights[i];
+            siso_arr <= arr[i];
+            out <= tmp;
+            i <= i+1;
+        end
+    end
+    
+endmodule
+
+module conv_mimo #(parameter H = 8, parameter W = 8, parameter D = 3, parameter K = 3, parameter N = 4)
+    (input logic clk,
+     input logic reset,
+     input TYPE arr[D-1:0][H-1:0][W-1:0],
+     input TYPE weights[K-1:0][D-1:0][9-1:0],
+     output TYPE out[K-1:0][H-1:0][W-1:0],
+     output logic done);
+     
+    int i = 0;
+    assign done = (i == K);
+    
+    logic miso_reset;
+    TYPE miso_weights[D-1:0][9-1:0];
+    TYPE miso_out[H-1:0][W-1:0];
+    logic miso_done;
+    conv_miso #(H, W, D, N) MISO(clk, miso_reset, arr, miso_weights, miso_out, miso_done);
+    assign miso_reset = reset | miso_done;
+    
+    always_ff @(posedge clk, posedge reset) begin
+        if (reset) begin
+            i <= 0;
+        end else if (~done & miso_done) begin
+            miso_weights <= weights[i];
+            out[i] <= miso_out;
+            i <= i+1;
+        end
+    end
+endmodule
 
 module pool_opt #(parameter H = 8, parameter W = 8, parameter N = 4)
     (input clk,
@@ -819,3 +927,36 @@ module top_opt #(parameter outD = 10, parameter N = 0)
     network_opt #(32, 32, 3, 10) n(img_rs, weights1_rs, bias1, weights2_rs, bias2, weights3_rs, bias3, weights4_rs, bias4, weights5_rs, bias5, weights6_rs, bias6, weights7_rs, bias7, weights8_rs, bias8, weights9_rs, bias9, pred);
     
 endmodule: top_opt
+
+module top();
+    
+    logic a;
+    logic b;
+    logic clk;
+    logic output_;
+    logic input_;
+    
+    assign b = ~a; //input a, output b
+    
+    always_ff @(posedge clk) begin
+        a <= input_;
+        output_ <= b;
+    end
+    
+    initial begin
+        clk = 0;
+        input_ = 0;
+        forever #5 clk = ~clk;
+    end
+    
+    initial begin
+        #10
+        @(posedge clk);
+        input_ = 1;
+        #50
+        @(posedge clk);
+        input_ = 0;
+        #10 $finish;
+    end
+    
+endmodule
