@@ -818,7 +818,7 @@ module relu_layer #(parameter H = 8, parameter W = 8, parameter D = 4, parameter
                 old_col = (i-N+j)%W;
                 out[old_layer][old_row][old_col] = relu_block_out[j];
                 
-                relu_block_in[layer][row][col] = arr[layer][row][col];
+                relu_block_in[j] = arr[layer][row][col];
             end
             
             i = i+N;
@@ -835,7 +835,7 @@ module test_relu_layer ();
     generate for (k = 0; k < 4; k++) begin
       for (i = 0; i < 8; i++) begin
         for (j = 0; j < 8; j++) begin
-            assign arr[k][i][j] = 64*k + 8*i+j + 1024;
+            assign arr[k][i][j] = 1024*(64*k + 8*i+j);
         end
       end
     end endgenerate
@@ -894,7 +894,7 @@ module pool_opt #(parameter H = 8, parameter W = 8, parameter N = 4)
      end
 endmodule: pool_opt
 
-module test_pool_opt #(parameter H = 8, parameter W = 8, parameter N = 6) ();
+module test_pool_opt #(parameter H = 8, parameter W = 8, parameter N = 16) ();
     TYPE pool_fn_res[N-1:0];
     TYPE pool_fn_vals[4*N-1:0];
     pool_fn_opt #(N) p(pool_fn_vals, pool_fn_res);
