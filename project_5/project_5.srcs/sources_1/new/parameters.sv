@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
-//put this line back in to simulate top
-//typedef int TYPE;
+//put this line back in to simulate 
+typedef int TYPE;
 
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
