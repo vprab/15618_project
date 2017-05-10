@@ -20,7 +20,8 @@ module conv_ind #(parameter CONV_SIZE = 9)
      
     TYPE vec_product[CONV_SIZE - 1:0];
     hadamard #(CONV_SIZE) h(params, weights, vec_product);
-    
+
+   /*
     generate
     if (CONV_SIZE == 1) begin
         assign res = bias+vec_product[0];
@@ -29,9 +30,10 @@ module conv_ind #(parameter CONV_SIZE = 9)
                       vec_product[0]+vec_product[1]+vec_product[2]+
                       vec_product[3]+vec_product[4]+vec_product[5]+
                       vec_product[6]+vec_product[7]+vec_product[8]);
-    end
+    end // this is not quite right
     endgenerate
-    //assign res = bias + vec_product.sum;
+    */
+    assign res = bias + vec_product.sum;
 endmodule: conv_ind
 
 //only for stride 2 pools
