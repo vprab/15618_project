@@ -41,3 +41,4 @@ if __name__ == '__main__':
     print Y[:10]
     print map(uncat, pred)
     print map(uncat, Y[:10])
+    

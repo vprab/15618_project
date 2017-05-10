@@ -17,9 +17,11 @@ def label2cat(labels, C = 10):
     return ohvs
         
         
-def loaddata():
-    imgs = np.load(datadir+'traindata.npy')[:10]
-    labels = label2cat(np.load(datadir+'trainlabels.npy')[:10])
+def loaddata(n = 10):
+    imgs = np.load(datadir+'traindata.npy')
+    labels = label2cat(np.load(datadir+'trainlabels.npy'))
+    if n:
+        return imgs[:n], labels[:n]
     return imgs, labels
 
 def buildmodel(dodiv = False):
