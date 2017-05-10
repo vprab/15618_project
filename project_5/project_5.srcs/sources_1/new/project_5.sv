@@ -595,17 +595,48 @@ module conv_siso #(parameter H = 8, parameter W = 8, parameter N = 4, S = 3)
     (input logic clk,
      input logic reset,
      input TYPE arr[H-1:0][W-1:0],
-     input TYPE weights[9-1:0],
+     input TYPE weights[S*S-1:0],
      input TYPE bias,
      input TYPE conv_block_out[N-1:0],
      output TYPE conv_block_in[S*S*N-1:0],
      output TYPE conv_block_weights[S*S-1:0],
      output TYPE conv_block_bias,
-     output TYPE out[H-1:0][W-1:0],
+     output TYPE out[H-S:0][W-S:0],
      output logic done); 
      
      //put padding logic into this module
-    
+     int i = 0;
+     assign done = (i > (H-S)*(W-S) + N);
+     assign conv_block_weights = weights;
+     assign conv_block_bias = bias;
+     
+     integer j, row, col, old_row, old_col;
+     always_ff @(posedge clk) begin
+        if (reset) begin
+            i = 0;
+        end else if (~done) begin
+            for (j = 0; j < N; j++) begin
+                row = (i+j)/(W-S);
+                col = (i+j)%(W-S);
+                
+                old_row = (i-N+j)/(W-S);
+                old_col = (i-N+j)%(W-S);
+                out[old_row][old_col] = conv_block_out[j];
+                
+                conv_block_in[S*S*j] = arr[row][col];
+                conv_block_in[S*S*j+1] = arr[row][col+1];
+                conv_block_in[S*S*j+2] = arr[row][col+2];
+                conv_block_in[S*S*j+3] = arr[row+1][col];
+                conv_block_in[S*S*j+4] = arr[row+1][col+1];
+                conv_block_in[S*S*j+5] = arr[row+1][col+2];
+                conv_block_in[S*S*j+6] = arr[row+2][col];
+                conv_block_in[S*S*j+7] = arr[row+2][col+1];
+                conv_block_in[S*S*j+8] = arr[row+2][col+2];
+            end
+            
+            i = i+N;
+        end
+     end  
 endmodule
 
 module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter N = 4, parameter S = 3)
@@ -706,13 +737,38 @@ endmodule
 module relu_layer #(parameter H = 8, parameter W = 8, parameter D = 4, parameter N = 4)
     (input clk,
      input reset,
-     input TYPE relu_block_out,
-     output TYPE relu_block_in,
+     input TYPE relu_block_out[N-1:0],
+     output TYPE relu_block_in[N-1:0],
      input TYPE arr[D-1:0][H-1:0][W-1:0],
      output TYPE out[D-1:0][H-1:0][W-1:0],
      output logic done);
           
     //maybe do this in place?
+    int i = 0;
+    assign done = (i >= D*W*H + N);
+    
+    integer j, row, col, old_row, old_col;
+    
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            i = 0;
+        end else if begin
+            for (j = 0; j < N; j++) begin
+                layer = (i+j)/(W*H);
+                row = ((i+j)%(W*H))/W;
+                col = (i+j)%W;
+                
+                old_layer = (i-N+j)/(W*H);
+                old_row = ((i-N+j)%(W*H))/W;
+                old_col = (i-N+j)%W;
+                out[old_layer][old_row][old_col] = relu_block_out[j];
+                
+                relu_block_in[layer][row][col] = arr[layer][row][col];
+            end
+            
+            i = i+N:
+        end
+    end
 
 endmodule
 
