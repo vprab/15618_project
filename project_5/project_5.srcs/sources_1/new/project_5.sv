@@ -651,6 +651,10 @@ module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
     
 endmodule
 
+//H, W: height and width
+//D, K: in and out dim
+//N: number of conv units
+//S: kernel size
 module conv_mimo #(parameter H = 8, parameter W = 8, parameter D = 3, parameter K = 3, parameter N = 4, S = 3)
     (input logic clk,
      input logic  reset,
@@ -779,8 +783,10 @@ module test_pool_opt #(parameter H = 4, parameter W = 4, parameter N = 4) ();
     
 endmodule: test_pool_opt
 
-module network_opt #(parameter inH = 32, parameter inW = 32, parameter inD = 3, outD = 10)
-    (input TYPE img[inD-1:0][inH-1:0][inW-1:0],
+module network_opt #(parameter H = 32, 
+                     parameter W = 32, 
+                     parameter N = 1024)
+    (input TYPE img[3-1:0][H-1:0][W-1:0],
      input TYPE weights1[8-1:0][3*3*3-1:0],
      input TYPE bias1[8-1:0],
      input TYPE weights2[16-1:0][3*3*8-1:0],
@@ -797,33 +803,35 @@ module network_opt #(parameter inH = 32, parameter inW = 32, parameter inD = 3, 
      input TYPE bias7[32-1:0],
      input TYPE weights8[16-1:0][1*1*32-1:0],
      input TYPE bias8[16-1:0],
-     input TYPE weights9[outD-1:0][1*1*16-1:0],
-     input TYPE bias9[outD-1:0],
-     output TYPE pred[outD-1:0]);
+     input TYPE weights9[10-1:0][1*1*16-1:0],
+     input TYPE bias9[10-1:0],
+     input logic clk,
+     input logic reset,
+     output TYPE pred[10-1:0]);
     
     //initialize memory
-    TYPE conv1[8-1:0][inH-1:0][inW-1:0];
-    TYPE relu1[8-1:0][inH-1:0][inW-1:0];
-    TYPE pool1[8-1:0][inH/2 - 1:0][inW/2 - 1:0];    
-    TYPE conv2[16-1:0][inH/2-1:0][inW/2-1:0];
-    TYPE relu2[16-1:0][inH/2-1:0][inW/2-1:0];
-    TYPE pool2[16-1:0][inH/4 - 1:0][inW/4 - 1:0];
-    TYPE conv3[32-1:0][inH/4 - 1:0][inW/4 - 1:0];
-    TYPE relu3[32-1:0][inH/4 - 1:0][inW/4 - 1:0];
-    TYPE pool3[32-1:0][inH/8-1:0][inW/8-1:0];
-    TYPE conv4[16-1:0][inH/8 - 1:0][inW/8 - 1:0];
-    TYPE relu4[16-1:0][inH/8 - 1:0][inW/8 - 1:0];
-    TYPE conv5[32-1:0][inH/8 - 1:0][inW/8 - 1:0];
-    TYPE relu5[32-1:0][inH/8 - 1:0][inW/8 - 1:0];
-    TYPE pool5[32-1:0][inH/16-1:0][inW/16-1:0];
-    TYPE conv6[16-1:0][inH/16 - 1:0][inW/16 - 1:0];
-    TYPE relu6[16-1:0][inH/16 - 1:0][inW/16 - 1:0];
-    TYPE conv7[32-1:0][inH/16 - 1:0][inW/16 - 1:0];
-    TYPE relu7[32-1:0][inH/16 - 1:0][inW/16 - 1:0];
-    TYPE pool7[32-1:0][inH/32-1:0][inW/32-1:0];
-    TYPE conv8[16-1:0][inH/32 - 1:0][inW/32 - 1:0];
-    TYPE relu8[16-1:0][inH/32 - 1:0][inW/32 - 1:0];
-    TYPE conv9[outD-1:0][0:0][0:0];
+    TYPE convlayer1[8-1:0][H-1:0][W-1:0];
+    TYPE relulayer1[8-1:0][H-1:0][W-1:0];
+    TYPE poollayer1[8-1:0][H/2 - 1:0][W/2 - 1:0];    
+    TYPE convlayer2[16-1:0][H/2-1:0][W/2-1:0];
+    TYPE relulayer2[16-1:0][H/2-1:0][W/2-1:0];
+    TYPE poollayer2[16-1:0][H/4 - 1:0][W/4 - 1:0];
+    TYPE convlayer3[32-1:0][H/4 - 1:0][W/4 - 1:0];
+    TYPE relulayer3[32-1:0][H/4 - 1:0][W/4 - 1:0];
+    TYPE poollayer3[32-1:0][H/8-1:0][W/8-1:0];
+    TYPE convlayer4[16-1:0][H/8 - 1:0][W/8 - 1:0];
+    TYPE relulayer4[16-1:0][H/8 - 1:0][W/8 - 1:0];
+    TYPE convlayer5[32-1:0][H/8 - 1:0][W/8 - 1:0];
+    TYPE relulayer5[32-1:0][H/8 - 1:0][W/8 - 1:0];
+    TYPE poollayer5[32-1:0][H/16-1:0][W/16-1:0];
+    TYPE convlayer6[16-1:0][H/16 - 1:0][W/16 - 1:0];
+    TYPE relulayer6[16-1:0][H/16 - 1:0][W/16 - 1:0];
+    TYPE convlayer7[32-1:0][H/16 - 1:0][W/16 - 1:0];
+    TYPE relulayer7[32-1:0][H/16 - 1:0][W/16 - 1:0];
+    TYPE poollayer7[32-1:0][H/32-1:0][W/32-1:0];
+    TYPE convlayer8[16-1:0][H/32 - 1:0][W/32 - 1:0];
+    TYPE relulayer8[16-1:0][H/32 - 1:0][W/32 - 1:0];
+    TYPE convlayer9[10-1:0][0:0][0:0];
     
     //initialize blocks
     
@@ -847,27 +855,45 @@ module network_opt #(parameter inH = 32, parameter inW = 32, parameter inD = 3, 
     TYPE pool_out[1024-1:0];
     pool_block #(1024) P(pool_in, pool_out);
     
-    //run computation
-
-    run_channels #(inW, inH, 3, 1, inD, 16) r1(img, weights1, bias1, res1); 
-    pool3d #(inH, inW, 8) p1(res1, res1_pooled);
-    run_channels #(inW, inH, 3, 1, 8, 16) r2(res1_pooled, weights2, bias2, res2);
-    pool3d #(inH/2, inW/2, 16) p2(res2, res2_pooled);
-    run_channels #(inW/2, inH/2, 3, 1, 16, 32) r3(res2_pooled, weights3, bias3, res3);
-    pool3d #(inH/2/2, inW/2/2, 32) p3(res3, res3_pooled);
-    run_channels #(inW/2/2/2, inH/2/2/2, 1, 0, 32, 16) r4(res3_pooled, weights4, bias4, res4); 
-    run_channels #(inW/2/2/2, inH/2/2/2, 3, 1, 16, 32) r5(res4, weights5, bias5, res5);
-    pool3d #(inH/2/2/2, inW/2/2/2, 32) p5(res5, res5_pooled);
-    run_channels #(inW/2/2/2/2, inH/2/2/2/2, 1, 0, 32, 16) r6(res5_pooled, weights6, bias6, res6);
-    run_channels #(inW/2/2/2/2, inH/2/2/2/2, 3, 1, 16, 32) r7(res6, weights7, bias7, res7);
-    pool3d #(inH/2/2/2/2, inW/2/2/2/2, 32) p7(res7, res7_pooled);
-    run_channels #(inW/2/2/2/2/2, inH/2/2/2/2/2, 1, 0, 32, 16) r8(res7_pooled, weights8, bias8, res8);  
-    run_channels #(inW/2/2/2/2/2, inH/2/2/2/2/2, 1, 0, 64, 10, 0) r11(res8, weights9, bias9, pred_unshaped);
+    //use this to control the computation
+    logic done;
     
+    //initialize conv layers
+    conv_mimo #(32, 32, 3, 8, 1024, 3) cm1(clk, reset, img, weights1, bias1, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer1, done);
+    conv_mimo #(16, 16, 8, 16, 1024, 3) cm2(clk, reset, poollayer1, weights2, bias1, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer2, done);
+    conv_mimo #(8, 8, 16, 32, 1024, 3) cm3(clk, reset, poollayer2, weights3, bias2, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer3, done);
+    conv_mimo #(4, 4, 32, 16, 1024, 1) cm4(clk, reset, poollayer3, weights4, bias3, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer4, done);
+    conv_mimo #(4, 4, 16, 32, 1024, 3) cm5(clk, reset, relulayer4, weights5, bias4, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer5, done);
+    conv_mimo #(2, 2, 32, 16, 1024, 1) cm6(clk, reset, poollayer5, weights6, bias5, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer6, done);
+    conv_mimo #(2, 2, 16, 32, 1024, 3) cm7(clk, reset, relulayer6, weights7, bias6, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer7, done);
+    conv_mimo #(1, 1, 32, 16, 1024, 1) cm8(clk, reset, poollayer7, weights8, bias7, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer8, done);
+    conv_mimo #(1, 1, 16, 10, 1024, 1) cm9(clk, reset, relulayer8, weights9, bias8, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer9, done);
+
+    //initialize relu layers
+    relu_layer #(32, 32, 8, 1024) rl1(clk, reset, relu_out, relu_in, convlayer1, relulayer1, done);
+    relu_layer #(16, 16, 16, 1024) rl2(clk, reset, relu_out, relu_in, convlayer2, relulayer2, done);
+    relu_layer #(8, 8, 32, 1024) rl3(clk, reset, relu_out, relu_in, convlayer3, relulayer3, done);
+    relu_layer #(4, 4, 16, 1024) rl4(clk, reset, relu_out, relu_in, convlayer4, relulayer4, done);
+    relu_layer #(4, 4, 32, 1024) rl5(clk, reset, relu_out, relu_in, convlayer5, relulayer5, done);
+    relu_layer #(2, 2, 16, 1024) rl6(clk, reset, relu_out, relu_in, convlayer6, relulayer6, done);
+    relu_layer #(2, 2, 32, 1024) rl7(clk, reset, relu_out, relu_in, convlayer7, relulayer7, done);
+    relu_layer #(1, 1, 16, 1024) rl8(clk, reset, relu_out, relu_in, convlayer8, relulayer8, done);
+    
+    //initialize pool layers
+    pool_opt #(32, 32, 1024) pl1(clk, relulayer1, pool_out, pool_in, poollayer1, done);
+    pool_opt #(16, 16, 1024) pl2(clk, relulayer2, pool_out, pool_in, poollayer2, done);
+    pool_opt #(8, 8, 1024) pl3(clk, relulayer3, pool_out, pool_in, poollayer3, done);
+    pool_opt #(4, 4, 1024) pl5(clk, relulayer5, pool_out, pool_in, poollayer5, done);
+    pool_opt #(2, 2, 1024) pl7(clk, relulayer7, pool_out, pool_in, poollayer7, done);
+    
+    //now run all layers somehow
+    
+    
+    //just some minor reshaping
     genvar chan;
     generate 
-        for(chan = 0; chan < outD; chan++) begin
-            assign pred[chan] = pred_unshaped[chan][0][0];
+        for(chan = 0; chan < 10; chan++) begin
+            assign pred[chan] = convlayer9[chan][0][0];
         end
     endgenerate
     
@@ -1154,3 +1180,22 @@ module reshape_test();
     end
 endmodule
 */
+
+
+module threebythree(input logic asdf[2:0][2:0],
+                    output logic qwer);
+    assign qwer = asdf[0][0] + asdf[2][2];
+endmodule
+
+module ninebyone();
+    logic nbo[8:0];
+    logic out;
+    threebythree T(nbo, out);
+        
+    initial begin
+        nbo = {1, 0, 0, 0, 1, 0, 1, 1, 1};
+        #10
+        $finish;
+    end
+
+endmodule
