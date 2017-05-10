@@ -806,7 +806,8 @@ module network_opt #(parameter H = 32,
      input TYPE weights9[10-1:0][1*1*16-1:0],
      input TYPE bias9[10-1:0],
      input logic clk,
-     input logic reset,
+     input logic reset_,
+     output logic finished,
      output TYPE pred[10-1:0]);
     
     //initialize memory
@@ -856,38 +857,55 @@ module network_opt #(parameter H = 32,
     pool_block #(1024) P(pool_in, pool_out);
     
     //use this to control the computation
-    logic done;
+    logic done[21:0];
+    logic [21:0] reset;
     
     //initialize conv layers
-    conv_mimo #(32, 32, 3, 8, 1024, 3) cm1(clk, reset, img, weights1, bias1, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer1, done);
-    conv_mimo #(16, 16, 8, 16, 1024, 3) cm2(clk, reset, poollayer1, weights2, bias1, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer2, done);
-    conv_mimo #(8, 8, 16, 32, 1024, 3) cm3(clk, reset, poollayer2, weights3, bias2, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer3, done);
-    conv_mimo #(4, 4, 32, 16, 1024, 1) cm4(clk, reset, poollayer3, weights4, bias3, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer4, done);
-    conv_mimo #(4, 4, 16, 32, 1024, 3) cm5(clk, reset, relulayer4, weights5, bias4, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer5, done);
-    conv_mimo #(2, 2, 32, 16, 1024, 1) cm6(clk, reset, poollayer5, weights6, bias5, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer6, done);
-    conv_mimo #(2, 2, 16, 32, 1024, 3) cm7(clk, reset, relulayer6, weights7, bias6, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer7, done);
-    conv_mimo #(1, 1, 32, 16, 1024, 1) cm8(clk, reset, poollayer7, weights8, bias7, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer8, done);
-    conv_mimo #(1, 1, 16, 10, 1024, 1) cm9(clk, reset, relulayer8, weights9, bias8, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer9, done);
+    conv_mimo #(32, 32, 3, 8, 1024, 3) cm1(clk, reset[0], img, weights1, bias1, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer1, done[0]);
+    conv_mimo #(16, 16, 8, 16, 1024, 3) cm2(clk, reset[3], poollayer1, weights2, bias1, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer2, done[3]);
+    conv_mimo #(8, 8, 16, 32, 1024, 3) cm3(clk, reset[6], poollayer2, weights3, bias2, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer3, done[6]);
+    conv_mimo #(4, 4, 32, 16, 1024, 1) cm4(clk, reset[9], poollayer3, weights4, bias3, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer4, done[9]);
+    conv_mimo #(4, 4, 16, 32, 1024, 3) cm5(clk, reset[11], relulayer4, weights5, bias4, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer5, done[11]);
+    conv_mimo #(2, 2, 32, 16, 1024, 1) cm6(clk, reset[14], poollayer5, weights6, bias5, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer6, done[14]);
+    conv_mimo #(2, 2, 16, 32, 1024, 3) cm7(clk, reset[16], relulayer6, weights7, bias6, conv3_out, conv3_in, conv3_weights, conv3_bias, convlayer7, done[16]);
+    conv_mimo #(1, 1, 32, 16, 1024, 1) cm8(clk, reset[19], poollayer7, weights8, bias7, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer8, done[19]);
+    conv_mimo #(1, 1, 16, 10, 1024, 1) cm9(clk, reset[21], relulayer8, weights9, bias8, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer9, done[21]);
 
     //initialize relu layers
-    relu_layer #(32, 32, 8, 1024) rl1(clk, reset, relu_out, relu_in, convlayer1, relulayer1, done);
-    relu_layer #(16, 16, 16, 1024) rl2(clk, reset, relu_out, relu_in, convlayer2, relulayer2, done);
-    relu_layer #(8, 8, 32, 1024) rl3(clk, reset, relu_out, relu_in, convlayer3, relulayer3, done);
-    relu_layer #(4, 4, 16, 1024) rl4(clk, reset, relu_out, relu_in, convlayer4, relulayer4, done);
-    relu_layer #(4, 4, 32, 1024) rl5(clk, reset, relu_out, relu_in, convlayer5, relulayer5, done);
-    relu_layer #(2, 2, 16, 1024) rl6(clk, reset, relu_out, relu_in, convlayer6, relulayer6, done);
-    relu_layer #(2, 2, 32, 1024) rl7(clk, reset, relu_out, relu_in, convlayer7, relulayer7, done);
-    relu_layer #(1, 1, 16, 1024) rl8(clk, reset, relu_out, relu_in, convlayer8, relulayer8, done);
+    relu_layer #(32, 32, 8, 1024) rl1(clk, reset[1], relu_out, relu_in, convlayer1, relulayer1, done[1]);
+    relu_layer #(16, 16, 16, 1024) rl2(clk, reset[4], relu_out, relu_in, convlayer2, relulayer2, done[4]);
+    relu_layer #(8, 8, 32, 1024) rl3(clk, reset[7], relu_out, relu_in, convlayer3, relulayer3, done[7]);
+    relu_layer #(4, 4, 16, 1024) rl4(clk, reset[10], relu_out, relu_in, convlayer4, relulayer4, done[10]);
+    relu_layer #(4, 4, 32, 1024) rl5(clk, reset[12], relu_out, relu_in, convlayer5, relulayer5, done[12]);
+    relu_layer #(2, 2, 16, 1024) rl6(clk, reset[15], relu_out, relu_in, convlayer6, relulayer6, done[15]);
+    relu_layer #(2, 2, 32, 1024) rl7(clk, reset[17], relu_out, relu_in, convlayer7, relulayer7, done[17]);
+    relu_layer #(1, 1, 16, 1024) rl8(clk, reset[20], relu_out, relu_in, convlayer8, relulayer8, done[20]);
     
     //initialize pool layers
-    pool_opt #(32, 32, 1024) pl1(clk, relulayer1, pool_out, pool_in, poollayer1, done);
-    pool_opt #(16, 16, 1024) pl2(clk, relulayer2, pool_out, pool_in, poollayer2, done);
-    pool_opt #(8, 8, 1024) pl3(clk, relulayer3, pool_out, pool_in, poollayer3, done);
-    pool_opt #(4, 4, 1024) pl5(clk, relulayer5, pool_out, pool_in, poollayer5, done);
-    pool_opt #(2, 2, 1024) pl7(clk, relulayer7, pool_out, pool_in, poollayer7, done);
+    pool_opt #(32, 32, 1024) pl1(clk, reset[2], relulayer1, pool_out, pool_in, poollayer1, done[2]);
+    pool_opt #(16, 16, 1024) pl2(clk, reset[5], relulayer2, pool_out, pool_in, poollayer2, done[5]);
+    pool_opt #(8, 8, 1024) pl3(clk, reset[8], relulayer3, pool_out, pool_in, poollayer3, done[8]);
+    pool_opt #(4, 4, 1024) pl5(clk, reset[13], relulayer5, pool_out, pool_in, poollayer5, done[13]);
+    pool_opt #(2, 2, 1024) pl7(clk, reset[18], relulayer7, pool_out, pool_in, poollayer7, done[18]);
     
-    //now run all layers somehow
+    //now run all layers
+    logic ready;
+    int stage = 0;
+    assign ready = done[stage];
+    assign finished = (stage >= 21);
     
+    always_ff @(posedge clk, posedge reset_) begin
+        if (reset_) begin
+            stage <= 0;
+            reset <= 21'h1FFFF;
+        end else if (ready & ~finished) begin
+            stage <= stage + 1; //reset that layer
+            reset[stage] <= 1;
+        end else begin
+            stage <= stage;
+            reset <= 21'h0;
+        end
+    end
     
     //just some minor reshaping
     genvar chan;
@@ -898,7 +916,6 @@ module network_opt #(parameter H = 32,
     endgenerate
     
 endmodule: network_opt
-
 
 module top_opt #(parameter outD = 10, parameter N = 0)
     (output TYPE pred[outD-1:0]);
