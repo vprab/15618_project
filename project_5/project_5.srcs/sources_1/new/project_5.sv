@@ -907,7 +907,7 @@ module pool_opt #(parameter H = 8, parameter W = 8, parameter N = 4)
      end
 endmodule: pool_opt
 
-module test_pool_opt #(parameter H = 8, parameter W = 8, parameter N = 6) ();
+module test_pool_opt #(parameter H = 8, parameter W = 8, parameter N = 16) ();
     TYPE pool_fn_res[N-1:0];
     TYPE pool_fn_vals[4*N-1:0];
     pool_fn_opt #(N) p(pool_fn_vals, pool_fn_res);
