@@ -688,11 +688,11 @@ module test_conv_siso ();
     
     assign bias = 2;
     
-    TYPE conv_block_in[3*3*4-1:0];
-    TYPE conv_block_out[4-1:0];
+    TYPE conv_block_in[3*3*1-1:0];
+    TYPE conv_block_out[1-1:0];
     TYPE conv_block_weights[3*3-1:0];
     TYPE conv_block_bias;
-    conv_block #(4, 3) cb(conv_block_in, conv_block_weights, conv_block_bias, conv_block_out);
+    conv_block #(1, 3) cb(conv_block_in, conv_block_weights, conv_block_bias, conv_block_out);
     
     logic done, clk, reset;
     initial begin
@@ -703,7 +703,7 @@ module test_conv_siso ();
         forever #10 clk = ~clk;
     end
     
-    conv_siso #(8, 8, 4, 3) cs(.*);
+    conv_siso #(8, 8, 1, 3) cs(.*);
 endmodule: test_conv_siso
 
 module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter N = 4, parameter S = 3)
@@ -838,6 +838,36 @@ module relu_layer #(parameter H = 8, parameter W = 8, parameter D = 4, parameter
     end
 
 endmodule
+
+module test_relu_layer ();
+    TYPE arr[4-1:0][8-1:0][8-1:0];
+    TYPE out[4-1:0][8-1:0][8-1:0];
+    
+    genvar i, j, k;
+    generate for (k = 0; k < 4; k++) begin
+      for (i = 0; i < 8; i++) begin
+        for (j = 0; j < 8; j++) begin
+            assign arr[k][i][j] = 64*k + 8*i+j + 1024;
+        end
+      end
+    end endgenerate
+    
+    TYPE relu_block_in[4-1:0];
+    TYPE relu_block_out[4-1:0];
+    
+    relu_block #(4) rb(relu_block_in, relu_block_out);
+    
+    logic done, clk, reset;
+    initial begin
+        clk = 1;
+        reset = 1;
+        #10
+        reset = 0;
+        forever #10 clk = ~clk;
+    end
+    
+    relu_layer #(8, 8, 4, 4) rl(.*);
+endmodule: test_relu_layer
 
 module pool_opt #(parameter H = 8, parameter W = 8, parameter N = 4)
     (input clk,
