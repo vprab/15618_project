@@ -37,7 +37,7 @@ module conv_ind #(parameter CONV_SIZE = 9)
 endmodule: conv_ind
 
 //only for stride 2 pools
-module pool_fn (input TYPE x1, input TYPE x2, input TYPE x3, input TYPE x4, output TYPE y);   
+module pool_fn (input TYPE x1, input TYPE x2, input TYPE x3, input TYPE x4, output TYPE y);  
     TYPE z1; 
     assign z1 = (x1 > x2) ? x1 : x2;
     TYPE z2;
@@ -603,11 +603,29 @@ module conv_block #(parameter N = 1, S = 3)
     
 endmodule
 
+module test_conv_block ();
+    TYPE params[3*3*4-1:0];
+    TYPE weights[3*3-1:0];
+    TYPE bias = 2;
+    TYPE res[4-1:0];
+    
+    genvar i;
+    generate for (i = 0; i < 3*3*4; i++) begin
+        assign params[i] = i;
+    end
+    
+    for (i = 0; i < 9; i++) begin
+        assign weights[i] = 1;
+    end endgenerate
+    
+    conv_block #(4, 3) cb(.*);
+endmodule: test_conv_block
+
 module conv_siso #(parameter H = 8, parameter W = 8, parameter N = 4, S = 3)
     (input logic clk,
      input logic reset,
      input TYPE arr[H-1:0][W-1:0],
-     input TYPE weights[9-1:0],
+     input TYPE weights[S*S-1:0],
      input TYPE bias,
      input TYPE conv_block_out[N-1:0],
      output TYPE conv_block_in[S*S*N-1:0],
@@ -617,8 +635,76 @@ module conv_siso #(parameter H = 8, parameter W = 8, parameter N = 4, S = 3)
      output logic done); 
      
      //put padding logic into this module
+     int i = 0;
+     assign done = (i >= H*W + N);
+     assign conv_block_weights = weights;
+     assign conv_block_bias = bias;
+     
+     integer j, row, col, old_row, old_col;
+     always_ff @(posedge clk) begin
+        if (reset) begin
+            i = 0;
+        end else if (~done) begin
+            for (j = 0; j < N; j++) begin
+                row = (i+j)/W;
+                col = (i+j)%W;
+                
+                old_row = (i-N+j)/W;
+                old_col = (i-N+j)%W;
+                out[old_row][old_col] = conv_block_out[j];
+                
+                conv_block_in[S*S*j] = row-1 < 0 | col-1 < 0 | row-1 >= H | col-1 >= W ? 0 : arr[row-1][col-1];
+                conv_block_in[S*S*j+1] = row-1 < 0 | col < 0 | row-1 >= H | col >= W ? 0 : arr[row-1][col];
+                conv_block_in[S*S*j+2] = row-1 < 0 | col+1 < 0 | row-1 >= H | col+1 >= W ? 0 : arr[row-1][col+1];
+                conv_block_in[S*S*j+3] = row < 0 | col-1 < 0 | row >= H | col-1 >= W ? 0 : arr[row][col-1];
+                conv_block_in[S*S*j+4] = row < 0 | col < 0 | row >= H | col >= W ? 0 : arr[row][col];
+                conv_block_in[S*S*j+5] = row < 0 | col+1 < 0 | row >= H | col+1 >= W ? 0 : arr[row][col+1];
+                conv_block_in[S*S*j+6] = row+1 < 0 | col-1 < 0 | row+1 >= H | col-1 >= W ? 0 : arr[row+1][col-1];
+                conv_block_in[S*S*j+7] = row+1 < 0 | col < 0 | row+1 >= H | col >= W ? 0 : arr[row+1][col];
+                conv_block_in[S*S*j+8] = row+1 < 0 | col+1 < 0 | row+1 >= H | col+1 >= W ? 0 : arr[row+1][col+1];
+            end
+            
+            i = i+N;
+        end
+     end  
+endmodule: conv_siso
+
+module test_conv_siso ();
+    TYPE arr[8-1:0][8-1:0];
+    TYPE out[8-1:0][8-1:0];
+    TYPE weights[3*3-1:0];
+    TYPE bias;
     
-endmodule
+    genvar i, j;
+    generate for (i = 0; i < 8; i++) begin
+        for (j = 0; j < 8; j++) begin
+            assign arr[i][j] = 8*i+j;
+        end
+    end
+    
+    for (i = 0; i < 9; i++) begin
+        assign weights[i] = 1;
+    end endgenerate;
+    
+    assign bias = 2;
+    
+    TYPE conv_block_in[3*3*4-1:0];
+    TYPE conv_block_out[4-1:0];
+    TYPE conv_block_weights[3*3-1:0];
+    TYPE conv_block_bias;
+    conv_block #(4, 3) cb(conv_block_in, conv_block_weights, conv_block_bias, conv_block_out);
+    
+    logic done, clk, reset;
+    initial begin
+        clk = 1;
+        reset = 1;
+        #10
+        reset = 0;
+        forever #10 clk = ~clk;
+    end
+    
+    conv_siso #(8, 8, 4, 3) cs(.*);
+endmodule: test_conv_siso
 
 module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter N = 4, parameter S = 3)
     (input logic clk,
@@ -718,60 +804,79 @@ endmodule
 module relu_layer #(parameter H = 8, parameter W = 8, parameter D = 4, parameter N = 4)
     (input clk,
      input reset,
-     input TYPE relu_block_out,
-     output TYPE relu_block_in,
+     input TYPE relu_block_out[N-1:0],
+     output TYPE relu_block_in[N-1:0],
      input TYPE arr[D-1:0][H-1:0][W-1:0],
      output TYPE out[D-1:0][H-1:0][W-1:0],
      output logic done);
           
     //maybe do this in place?
+    int i = 0;
+    assign done = (i >= D*W*H + N);
+    
+    integer j, layer, row, col, old_layer, old_row, old_col;
+    
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            i = 0;
+        end else if (~done) begin
+            for (j = 0; j < N; j++) begin
+                layer = (i+j)/(W*H);
+                row = ((i+j)%(W*H))/W;
+                col = (i+j)%W;
+                
+                old_layer = (i-N+j)/(W*H);
+                old_row = ((i-N+j)%(W*H))/W;
+                old_col = (i-N+j)%W;
+                out[old_layer][old_row][old_col] = relu_block_out[j];
+                
+                relu_block_in[layer][row][col] = arr[layer][row][col];
+            end
+            
+            i = i+N;
+        end
+    end
 
 endmodule
 
 module pool_opt #(parameter H = 8, parameter W = 8, parameter N = 4)
     (input clk,
+     input reset,
      input TYPE arr[H-1:0][W-1:0],
      input TYPE pool_fn_res[N-1:0],
      output TYPE pool_fn_vals[4*N-1:0],
-     output TYPE pooled[H/2-1:0][W/2-1:0]);
+     output TYPE pooled[H/2-1:0][W/2-1:0],
+     output logic done);
      
      int i = 0;
-     logic done;
-     assign done = (i == (H*W/N));
+     assign done = (i >= H*W/4 + N);
+     
+     integer j, row, col, old_row, old_col;
      
      always_ff @(posedge clk) begin
-        if (~done) begin
-            pool_fn_vals[0] = arr[i/W][i%W];
-            pool_fn_vals[1] = arr[i/W][i%W + 1];
-            pool_fn_vals[2] = arr[i/W + 1][i%W];
-            pool_fn_vals[3] = arr[i/W + 1][i%W + 1];
+        if (reset) begin
+            i = 0;
+        end else if (~done) begin
+            for (j = 0; j < N; j++) begin
+                row = (i+j)/(W/2);
+                col = (i+j)%(W/2);
+                
+                old_row = (i-N+j)/(W/2);
+                old_col = (i-N+j)%(W/2);
+                pooled[old_row][old_col] = pool_fn_res[j];
+                
+                pool_fn_vals[4*j] = arr[2*row][2*col];
+                pool_fn_vals[4*j+1] = arr[2*row][2*col + 1];
+                pool_fn_vals[4*j+2] = arr[2*row + 1][2*col];
+                pool_fn_vals[4*j+3] = arr[2*row + 1][2*col + 1];
+            end
             
-            pool_fn_vals[4] = arr[i/W + 2][i%W];
-            pool_fn_vals[5] = arr[i/W + 2][i%W + 1];
-            pool_fn_vals[6] = arr[i/W + 3][i%W];
-            pool_fn_vals[7] = arr[i/W + 3][i%W +1];
-            
-            pool_fn_vals[8] = arr[i/W][i%W + 2];
-            pool_fn_vals[9] = arr[i/W][i%W + 3];
-            pool_fn_vals[10] = arr[i/W + 1][i%W + 2];
-            pool_fn_vals[11] = arr[i/W + 1][i%W + 3];
-            
-            pool_fn_vals[12] = arr[i/W + 2][i%W + 2];
-            pool_fn_vals[13] = arr[i/W + 2][i%W + 3];
-            pool_fn_vals[14] = arr[i/W + 3][i%W + 2];
-            pool_fn_vals[15] = arr[i/W + 3][i%W + 3];
-            
-            pooled[i/W][(i/2)%(W/2)] <= pool_fn_res[0];
-            pooled[i/W + 1][(i/2)%(W/2)] <= pool_fn_res[1];
-            pooled[i/W][(i/2)%(W/2) + 1] <= pool_fn_res[2];
-            pooled[i/W + 1][(i/2)%(W/2) + 1] <= pool_fn_res[3];
-            
-            i = i+4;
+            i = i+N;
         end
      end
 endmodule: pool_opt
 
-module test_pool_opt #(parameter H = 4, parameter W = 4, parameter N = 4) ();
+module test_pool_opt #(parameter H = 8, parameter W = 8, parameter N = 6) ();
     TYPE pool_fn_res[N-1:0];
     TYPE pool_fn_vals[4*N-1:0];
     pool_fn_opt #(N) p(pool_fn_vals, pool_fn_res);
@@ -780,7 +885,7 @@ module test_pool_opt #(parameter H = 4, parameter W = 4, parameter N = 4) ();
     genvar i, j;
     generate for (i = 0; i < H; i++) begin
         for (j = 0; j < W; j++) begin
-            assign arr[i][j] = 4*i + j;
+            assign arr[i][j] = W*i + j;
         end
     end endgenerate
     
@@ -790,10 +895,74 @@ module test_pool_opt #(parameter H = 4, parameter W = 4, parameter N = 4) ();
         #5 clk = 0;
     end
     
+    logic reset = 0;
+    logic done = 0;
+    
     TYPE pooled[H/2-1:0][W/2-1:0];
-    pool_opt #(H, W, N) po(clk, arr, pool_fn_res, pool_fn_vals, pooled);
+    pool_opt #(H, W, N) po(clk, reset, arr, pool_fn_res, pool_fn_vals, pooled, done);
     
 endmodule: test_pool_opt
+
+module pool_layers_opt #(parameter H = 8, parameter W = 8, parameter L = 2, parameter N = 4)
+    (input TYPE arr[L-1:0][H-1:0][W-1:0],
+     input logic clk,
+     input logic reset,
+     output TYPE res[L-1:0][H/2-1:0][W/2-1:0],
+     output logic done);
+     
+    TYPE pool_fn_res[N-1:0];
+    TYPE pool_fn_vals[4*N-1:0];
+    pool_fn_opt #(N) pf(pool_fn_vals, pool_fn_res);
+    
+    int i;
+    assign done = (i == L+1);
+    
+    logic pool_reset;
+    logic pool_done;
+    
+    TYPE arr_layer[H-1:0][W-1:0];
+    TYPE pooled_layer[H/2-1:0][W/2-1:0];
+    pool_opt #(H, W, N) p(clk, pool_reset, arr_layer, pool_fn_res, pool_fn_vals, pooled_layer, pool_done);
+    assign pool_reset = reset | pool_done;
+    
+    always_ff @(posedge clk, posedge reset) begin
+        if (reset) begin
+            i <= 0;
+        end else if (~done & pool_done) begin
+            res[i-1] <= pooled_layer;
+            arr_layer <= arr[i];
+            
+            i <= i+1;
+        end
+     end
+endmodule: pool_layers_opt
+ 
+module test_pool_layers_opt ();
+    TYPE arr[2-1:0][8-1:0][8-1:0];
+    TYPE res[2-1:0][4-1:0][4-1:0];
+    
+    genvar i, j, k;
+    generate for (i = 0; i < 2; i++) begin
+        for (j = 0; j < 8; j++) begin
+            for (k = 0; k < 8; k++) begin
+                assign arr[i][j][k] = 64*i + 8*j + k;
+            end
+        end
+    end endgenerate
+    
+    logic clk, reset;
+    initial begin
+        clk = 1;
+        reset = 1;
+        #10
+        reset = 0;
+        forever #10 clk = ~clk;
+    end
+    logic done;
+    
+    pool_layers_opt #(8, 8, 2, 4) p(.*);
+    
+endmodule: test_pool_layers_opt
 
 module network_opt #(parameter H = 32, 
                      parameter W = 32, 
