@@ -25,7 +25,7 @@ module conv_ind #(parameter CONV_SIZE = 9)
 endmodule: conv_ind
 
 //only for stride 2 pools
-module pool_fn (input TYPE x1, input TYPE x2, input TYPE x3, input TYPE x4, output TYPE y)pol_opt;   
+module pool_fn (input TYPE x1, input TYPE x2, input TYPE x3, input TYPE x4, output TYPE y);  
     TYPE z1; 
     assign z1 = (x1 > x2) ? x1 : x2;
     TYPE z2;
@@ -591,6 +591,24 @@ module conv_block #(parameter N = 1, S = 3)
     
 endmodule
 
+module test_conv_block ();
+    TYPE params[3*3*4-1:0];
+    TYPE weights[3*3-1:0];
+    TYPE bias = 2;
+    TYPE res[4-1:0];
+    
+    genvar i;
+    generate for (i = 0; i < 3*3*4; i++) begin
+        assign params[i] = i;
+    end
+    
+    for (i = 0; i < 9; i++) begin
+        assign weights[i] = 1;
+    end endgenerate
+    
+    conv_block #(4, 3) cb(.*);
+endmodule: test_conv_block
+
 module conv_siso #(parameter H = 8, parameter W = 8, parameter N = 4, S = 3)
     (input logic clk,
      input logic reset,
@@ -601,12 +619,12 @@ module conv_siso #(parameter H = 8, parameter W = 8, parameter N = 4, S = 3)
      output TYPE conv_block_in[S*S*N-1:0],
      output TYPE conv_block_weights[S*S-1:0],
      output TYPE conv_block_bias,
-     output TYPE out[H-S:0][W-S:0],
+     output TYPE out[H-1:0][W-1:0],
      output logic done); 
      
      //put padding logic into this module
      int i = 0;
-     assign done = (i > (H-S)*(W-S) + N);
+     assign done = (i >= H*W + N);
      assign conv_block_weights = weights;
      assign conv_block_bias = bias;
      
@@ -616,28 +634,65 @@ module conv_siso #(parameter H = 8, parameter W = 8, parameter N = 4, S = 3)
             i = 0;
         end else if (~done) begin
             for (j = 0; j < N; j++) begin
-                row = (i+j)/(W-S);
-                col = (i+j)%(W-S);
+                row = (i+j)/W;
+                col = (i+j)%W;
                 
-                old_row = (i-N+j)/(W-S);
-                old_col = (i-N+j)%(W-S);
+                old_row = (i-N+j)/W;
+                old_col = (i-N+j)%W;
                 out[old_row][old_col] = conv_block_out[j];
                 
-                conv_block_in[S*S*j] = arr[row][col];
-                conv_block_in[S*S*j+1] = arr[row][col+1];
-                conv_block_in[S*S*j+2] = arr[row][col+2];
-                conv_block_in[S*S*j+3] = arr[row+1][col];
-                conv_block_in[S*S*j+4] = arr[row+1][col+1];
-                conv_block_in[S*S*j+5] = arr[row+1][col+2];
-                conv_block_in[S*S*j+6] = arr[row+2][col];
-                conv_block_in[S*S*j+7] = arr[row+2][col+1];
-                conv_block_in[S*S*j+8] = arr[row+2][col+2];
+                conv_block_in[S*S*j] = row-1 < 0 | col-1 < 0 | row-1 >= H | col-1 >= W ? 0 : arr[row-1][col-1];
+                conv_block_in[S*S*j+1] = row-1 < 0 | col < 0 | row-1 >= H | col >= W ? 0 : arr[row-1][col];
+                conv_block_in[S*S*j+2] = row-1 < 0 | col+1 < 0 | row-1 >= H | col+1 >= W ? 0 : arr[row-1][col+1];
+                conv_block_in[S*S*j+3] = row < 0 | col-1 < 0 | row >= H | col-1 >= W ? 0 : arr[row][col-1];
+                conv_block_in[S*S*j+4] = row < 0 | col < 0 | row >= H | col >= W ? 0 : arr[row][col];
+                conv_block_in[S*S*j+5] = row < 0 | col+1 < 0 | row >= H | col+1 >= W ? 0 : arr[row][col+1];
+                conv_block_in[S*S*j+6] = row+1 < 0 | col-1 < 0 | row+1 >= H | col-1 >= W ? 0 : arr[row+1][col-1];
+                conv_block_in[S*S*j+7] = row+1 < 0 | col < 0 | row+1 >= H | col >= W ? 0 : arr[row+1][col];
+                conv_block_in[S*S*j+8] = row+1 < 0 | col+1 < 0 | row+1 >= H | col+1 >= W ? 0 : arr[row+1][col+1];
             end
             
             i = i+N;
         end
      end  
-endmodule
+endmodule: conv_siso
+
+module test_conv_siso ();
+    TYPE arr[8-1:0][8-1:0];
+    TYPE out[8-1:0][8-1:0];
+    TYPE weights[3*3-1:0];
+    TYPE bias;
+    
+    genvar i, j;
+    generate for (i = 0; i < 8; i++) begin
+        for (j = 0; j < 8; j++) begin
+            assign arr[i][j] = 8*i+j;
+        end
+    end
+    
+    for (i = 0; i < 9; i++) begin
+        assign weights[i] = 1;
+    end endgenerate;
+    
+    assign bias = 2;
+    
+    TYPE conv_block_in[3*3*4-1:0];
+    TYPE conv_block_out[4-1:0];
+    TYPE conv_block_weights[3*3-1:0];
+    TYPE conv_block_bias;
+    conv_block #(4, 3) cb(conv_block_in, conv_block_weights, conv_block_bias, conv_block_out);
+    
+    logic done, clk, reset;
+    initial begin
+        clk = 1;
+        reset = 1;
+        #10
+        reset = 0;
+        forever #10 clk = ~clk;
+    end
+    
+    conv_siso #(8, 8, 4, 3) cs(.*);
+endmodule: test_conv_siso
 
 module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter N = 4, parameter S = 3)
     (input logic clk,
@@ -747,12 +802,12 @@ module relu_layer #(parameter H = 8, parameter W = 8, parameter D = 4, parameter
     int i = 0;
     assign done = (i >= D*W*H + N);
     
-    integer j, row, col, old_row, old_col;
+    integer j, layer, row, col, old_layer, old_row, old_col;
     
     always_ff @(posedge clk) begin
         if (reset) begin
             i = 0;
-        end else if begin
+        end else if (~done) begin
             for (j = 0; j < N; j++) begin
                 layer = (i+j)/(W*H);
                 row = ((i+j)%(W*H))/W;
@@ -766,7 +821,7 @@ module relu_layer #(parameter H = 8, parameter W = 8, parameter D = 4, parameter
                 relu_block_in[layer][row][col] = arr[layer][row][col];
             end
             
-            i = i+N:
+            i = i+N;
         end
     end
 
