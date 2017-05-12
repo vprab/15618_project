@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-typedef integer TYPE;
+typedef byte TYPE;
 
 module hadamard #(parameter VEC_LEN = 9)
     (input TYPE params[VEC_LEN-1:0],
@@ -33,7 +33,17 @@ module conv_ind #(parameter CONV_SIZE = 9)
     end // this is not quite right
     endgenerate
     */
-    assign res = bias + vec_product.sum;
+    
+    TYPE intermediate [CONV_SIZE-1:0];
+    genvar i;
+    generate
+        assign intermediate[0] = vec_product[0];
+        for(i = 1; i < CONV_SIZE; i++) begin
+            assign intermediate[i] = intermediate[i-1] + vec_product[i];
+        end
+    endgenerate
+    
+    assign res = bias + intermediate[CONV_SIZE-1];
 endmodule: conv_ind
 
 //only for stride 2 pools
@@ -297,6 +307,80 @@ module network #(parameter inH = 32, parameter inW = 32, parameter inD = 3, outD
     
 endmodule: network
 
+
+module network2
+    (input TYPE img[3-1:0][32-1:0][32-1:0],
+     input TYPE weights1[1-1:0][3*3*3-1:0],
+     input TYPE bias1[1-1:0],
+     input TYPE weights2[2-1:0][3*3*1-1:0],
+     input TYPE bias2[2-1:0],
+     input TYPE weights3[4-1:0][3*3*2-1:0],
+     input TYPE bias3[4-1:0],
+     input TYPE weights4[2-1:0][1*1*4-1:0],
+     input TYPE bias4[2-1:0],
+     input TYPE weights5[4-1:0][3*3*2-1:0],
+     input TYPE bias5[4-1:0],
+     input TYPE weights6[2-1:0][1*1*4-1:0],
+     input TYPE bias6[2-1:0],
+     input TYPE weights7[4-1:0][3*3*2-1:0],
+     input TYPE bias7[4-1:0],
+     input TYPE weights8[2-1:0][1*1*4-1:0],
+     input TYPE bias8[2-1:0],
+     input TYPE weights9[1-1:0][1*1*2-1:0],
+     input TYPE bias9[1-1:0],
+     output TYPE pred[1-1:0]);
+    
+    TYPE res1[1-1:0][32-1:0][32-1:0];
+    run_channels #(32, 32, 3, 1, 3, 1) r1(img, weights1, bias1, res1);
+    
+    TYPE res1_pooled[1-1:0][16 - 1:0][16 - 1:0];
+    pool3d #(32, 32, 1) p1(res1, res1_pooled);
+    
+    TYPE res2[2-1:0][16-1:0][16-1:0];
+    run_channels #(16, 16, 3, 1, 1, 2) r2(res1_pooled, weights2, bias2, res2);
+    
+    TYPE res2_pooled[2-1:0][8 - 1:0][8 - 1:0];
+    pool3d #(16, 16, 2) p2(res2, res2_pooled);
+    
+    TYPE res3[4-1:0][8 - 1:0][8 - 1:0];
+    run_channels #(8, 8, 3, 1, 2, 4) r3(res2_pooled, weights3, bias3, res3);
+    
+    TYPE res3_pooled[4-1:0][4-1:0][4-1:0];
+    pool3d #(8, 8, 4) p3(res3, res3_pooled);
+    
+    TYPE res4[2-1:0][4 - 1:0][4 - 1:0];
+    run_channels #(4, 4, 1, 0, 4, 2) r4(res3_pooled, weights4, bias4, res4);
+    
+    TYPE res5[4-1:0][4 - 1:0][4 - 1:0];
+    run_channels #(4, 4, 3, 1, 2, 4) r5(res4, weights5, bias5, res5);
+    
+    TYPE res5_pooled[4-1:0][2-1:0][2-1:0];
+    pool3d #(4, 4, 4) p5(res5, res5_pooled);
+    
+    TYPE res6[2-1:0][2 - 1:0][2 - 1:0];
+    run_channels #(2, 2, 1, 0, 4, 2) r6(res5_pooled, weights6, bias6, res6);
+        
+    TYPE res7[4-1:0][2 - 1:0][2 - 1:0];
+    run_channels #(2, 2, 3, 1, 2, 4) r7(res6, weights7, bias7, res7);
+    
+    TYPE res7_pooled[4-1:0][1-1:0][1-1:0];
+    pool3d #(2, 2, 4) p7(res7, res7_pooled);
+    
+    TYPE res8[2-1:0][1 - 1:0][1 - 1:0];
+    run_channels #(1, 1, 1, 0, 4, 2) r8(res7_pooled, weights8, bias8, res8);  
+    
+    TYPE pred_unshaped[1-1:0][0:0][0:0];
+    run_channels #(1, 1, 1, 0, 2, 1, 0) r11(res8, weights9, bias9, pred_unshaped);
+    
+    genvar chan;
+    generate 
+        for(chan = 0; chan < 1; chan++) begin
+            assign pred[chan] = pred_unshaped[chan][0][0];
+        end
+    endgenerate
+    
+endmodule: network2
+
 module test_conv_ind_channel();
     // 4x4x3 image, 3x3x3 kernel
     TYPE weights[27-1:0] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
@@ -358,7 +442,7 @@ module test_conv_ind();
     assign bias = 2;
 endmodule
 
-module top #(parameter outD = 10, parameter N = 1)
+module top4 #(parameter outD = 10, parameter N = 1)
     (output TYPE pred[outD-1:0]);
     
     genvar i, j, k;
@@ -531,10 +615,189 @@ module top #(parameter outD = 10, parameter N = 1)
     //assign max = queue.pop_front();
     //assign res = pred.find_first_index(max).pop_front();
     
+endmodule: top4
+
+module top (input logic clk, 
+            input logic switch[7:0],
+            output logic led[7:0]);    
+
+    genvar i, j, k;
+    
+    TYPE img[3072-1:0];
+    cifar2 I0(.*);
+    TYPE img_rs[3-1:0][32-1:0][32-1:0];
+    
+    generate for (i = 0; i < 3; i = i+1) begin
+        for (j = 0; j < 32; j = j+1) begin
+            for (k = 0; k < 32; k = k+1) begin
+                assign img_rs[i][j][k] = img[32*32*i + 32*j + k];
+            end
+        end
+    end
+    
+    TYPE weights1[1*3*3*3-1:0];
+    TYPE bias1[1-1:0];
+    TYPE weights2[2*3*3*1-1:0];
+    TYPE bias2[2-1:0];
+    TYPE weights3[4*3*3*2-1:0];
+    TYPE bias3[4-1:0];
+    TYPE weights4[2*1*1*4-1:0];
+    TYPE bias4[2-1:0];
+    TYPE weights5[4*3*3*2-1:0];
+    TYPE bias5[4-1:0];
+    TYPE weights6[2*1*1*4-1:0];
+    TYPE bias6[2-1:0];
+    TYPE weights7[4*3*3*2-1:0];
+    TYPE bias7[4-1:0];
+    TYPE weights8[2*1*1*4-1:0];
+    TYPE bias8[2-1:0];
+    TYPE weights9[1*1*1*2-1:0];
+    TYPE bias9[1-1:0];
+    
+    parameters2 p(weights1, bias1, 
+                  weights2, bias2, 
+                  weights3, bias3, 
+                  weights4, bias4, 
+                  weights5, bias5, 
+                  weights6, bias6, 
+                  weights7, bias7, 
+                  weights8, bias8, 
+                  weights9, bias9);
+    
+    TYPE weights1_rs[1-1:0][3*3*3-1:0];
+    for (i = 0; i < 1; i = i+1) begin
+        for (j = 0; j < 3*3*3; j = j+1) begin
+            assign weights1_rs[i][j] = weights1[3*3*3*i + j];
+        end
+    end
+    
+    TYPE weights2_rs[2-1:0][3*3*1-1:0];
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 3*3*1; j = j+1) begin
+            assign weights2_rs[i][j] = weights2[3*3*1*i + j];
+        end
+    end
+    
+    TYPE weights3_rs[4-1:0][3*3*2-1:0];
+    for (i = 0; i < 4; i = i+1) begin
+        for (j = 0; j < 3*3*2; j = j+1) begin
+            assign weights3_rs[i][j] = weights3[3*3*2*i + j];
+        end
+    end
+    
+    TYPE weights4_rs[2-1:0][1*1*4-1:0];
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 1*1*4; j = j+1) begin
+            assign weights4_rs[i][j] = weights4[1*1*4*i + j];
+        end
+    end
+        
+    TYPE weights5_rs[4-1:0][3*3*2-1:0];
+    for (i = 0; i < 4; i = i+1) begin
+        for (j = 0; j < 3*3*2; j = j+1) begin
+            assign weights5_rs[i][j] = weights5[3*3*2*i + j];
+        end
+    end
+        
+    TYPE weights6_rs[2-1:0][1*1*4-1:0];
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 1*1*4; j = j+1) begin
+            assign weights6_rs[i][j] = weights6[1*1*4*i + j];
+        end
+    end
+        
+    TYPE weights7_rs[4-1:0][3*3*2-1:0];
+    for (i = 0; i < 4; i = i+1) begin
+        for (j = 0; j < 3*3*2; j = j+1) begin
+            assign weights7_rs[i][j] = weights7[3*3*2*i + j];
+        end
+    end
+        
+    TYPE weights8_rs[2-1:0][1*1*4-1:0];
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 1*1*4; j = j+1) begin
+            assign weights8_rs[i][j] = weights8[1*1*4*i + j];
+        end
+    end
+        
+    TYPE weights9_rs[1-1:0][1*1*2-1:0];
+    for (i = 0; i < 1; i = i+1) begin
+        for (j = 0; j < 1*1*2; j = j+1) begin
+            assign weights9_rs[i][j] = weights9[1*1*2*i + j];
+        end
+    end 
+    endgenerate
+    
+    TYPE bias2_[1:0];
+    TYPE bias4_[1:0];
+    TYPE bias6_[1:0];
+    TYPE bias8_[1:0];
+    
+    TYPE pred[0:0];
+    network2 n(img_rs, weights1_rs, bias1, 
+               weights2_rs, bias2_, 
+               weights3_rs, bias3, 
+               weights4_rs, bias4_, 
+               weights5_rs, bias5, 
+               weights6_rs, bias6_, 
+               weights7_rs, bias7, 
+               weights8_rs, bias8_, 
+               weights9_rs, bias9, pred);
+
+    assign bias2_[0] = switch[0];
+    assign bias2_[1] = switch[1];
+    assign bias4_[0] = switch[2];
+    assign bias4_[1] = switch[3];
+    assign bias6_[0] = switch[4];
+    assign bias6_[1] = switch[5];
+    assign bias8_[0] = switch[6];
+    assign bias8_[1] = switch[7];
+    
+    always_ff @(posedge clk) begin
+        led[0] <= pred[0];
+    end
+
 endmodule: top
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+module top8 (input logic clk, 
+            input logic switch[7:0],
+            output logic led[7:0]);
 
+    logic thing1[1000-1:0];
+    logic thing2[1000-1:0];
+
+    always_ff @(posedge clk, negedge clk) begin
+        if (clk) begin
+            thing1[0] <= switch[6];
+            thing1[999:1] <= thing2[998:0];
+        end else begin
+            thing1[0] <= switch[1];
+            thing2[999:1] <= thing1[998:0];
+            led <= thing2[999-:8];
+        end
+    end
+    
+endmodule: top8
+
+module top6 (input logic clk, output logic test);
+    //do something computationally intensive
+    logic stuff[65536-1:0];
+    logic sum[65536-1:0];
+    assign stuff[0] = clk;
+    assign sum[0] = 0;
+    genvar i;
+    generate
+        for(i = 1; i < 65536; i++) begin
+            assign stuff[i] = ~stuff[i-1];
+            assign sum[i] = sum[i-1]+stuff[i];
+        end
+    endgenerate
+    
+    assign test = sum[65536-1];
+    
+endmodule
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 module add2d #(parameter H = 8, parameter W = 8)
     (input TYPE a[H-1:0][W-1:0],
