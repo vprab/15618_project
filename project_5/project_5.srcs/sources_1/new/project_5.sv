@@ -20,7 +20,19 @@ module conv_ind #(parameter CONV_SIZE = 9)
      
     TYPE vec_product[CONV_SIZE - 1:0];
     hadamard #(CONV_SIZE) h(params, weights, vec_product);
-    
+
+   /*
+    generate
+    if (CONV_SIZE == 1) begin
+        assign res = bias+vec_product[0];
+    end else if (CONV_SIZE == 9) begin
+        assign res = (bias+
+                      vec_product[0]+vec_product[1]+vec_product[2]+
+                      vec_product[3]+vec_product[4]+vec_product[5]+
+                      vec_product[6]+vec_product[7]+vec_product[8]);
+    end // this is not quite right
+    endgenerate
+    */
     assign res = bias + vec_product.sum;
 endmodule: conv_ind
 
@@ -346,7 +358,7 @@ module test_conv_ind();
     assign bias = 2;
 endmodule
 
-module top2 #(parameter outD = 10, parameter N = 1)
+module top #(parameter outD = 10, parameter N = 1)
     (output TYPE pred[outD-1:0]);
     
     genvar i, j, k;
@@ -519,7 +531,7 @@ module top2 #(parameter outD = 10, parameter N = 1)
     //assign max = queue.pop_front();
     //assign res = pred.find_first_index(max).pop_front();
     
-endmodule: top2
+endmodule: top
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -832,6 +844,7 @@ module relu_block #(parameter N = 4)
         relu R(inp[i],out[i]);
     end endgenerate
 endmodule
+
 
 module relu_layer #(parameter H = 8, parameter W = 8, parameter D = 4, parameter N = 4)
     (input clk,
@@ -1331,7 +1344,7 @@ module top_opt #(parameter outD = 10, parameter N = 0)
     
 endmodule: top_opt
 
-module top();
+module top3();
     
     logic a;
     logic b;
