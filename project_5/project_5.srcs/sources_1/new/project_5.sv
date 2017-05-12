@@ -1545,15 +1545,25 @@ module network_opt #(parameter H = 32,
     conv_mimo #(1, 1, 32, 16, 1024, 1) cm8(clk, reset[19], poollayer7, weights8, bias8, conv1_out, conv1_in3, conv1_weights3, conv1_bias3, convlayer8, done[19]);
     conv_mimo #(1, 1, 16, 10, 1024, 1) cm9(clk, reset[21], relulayer8, weights9, bias9, conv1_out, conv1_in4, conv1_weights4, conv1_bias4, convlayer9, done[21]);
 
+    TYPE relu_in1[1024-1:0];;
+    TYPE relu_in2[1024-1:0];
+    TYPE relu_in3[1024-1:0];
+    TYPE relu_in4[1024-1:0];
+    TYPE relu_in5[1024-1:0];
+    TYPE relu_in6[1024-1:0];
+    TYPE relu_in7[1024-1:0];
+    TYPE relu_in8[1024-1:0];
+    assign relu_in = (stage == 1) ? relu_in1 : (stage == 4) ? relu_in2 : (stage == 7) ? relu_in3 : (stage == 10) ? relu_in4 : (stage == 12) ? relu_in5 : (stage == 15) ? relu_in6 : (stage == 17) ? relu_in7 : relu_in8;
+    
     //initialize relu layers
-    relu_layer #(32, 32, 8, 1024) rl1(clk, reset[1], relu_out, relu_in, convlayer1, relulayer1, done[1]);
-    relu_layer #(16, 16, 16, 1024) rl2(clk, reset[4], relu_out, relu_in, convlayer2, relulayer2, done[4]);
-    relu_layer #(8, 8, 32, 1024) rl3(clk, reset[7], relu_out, relu_in, convlayer3, relulayer3, done[7]);
-    relu_layer #(4, 4, 16, 1024) rl4(clk, reset[10], relu_out, relu_in, convlayer4, relulayer4, done[10]);
-    relu_layer #(4, 4, 32, 1024) rl5(clk, reset[12], relu_out, relu_in, convlayer5, relulayer5, done[12]);
-    relu_layer #(2, 2, 16, 1024) rl6(clk, reset[15], relu_out, relu_in, convlayer6, relulayer6, done[15]);
-    relu_layer #(2, 2, 32, 1024) rl7(clk, reset[17], relu_out, relu_in, convlayer7, relulayer7, done[17]);
-    relu_layer #(1, 1, 16, 1024) rl8(clk, reset[20], relu_out, relu_in, convlayer8, relulayer8, done[20]);
+    relu_layer #(32, 32, 8, 1024) rl1(clk, reset[1], relu_out, relu_in1, convlayer1, relulayer1, done[1]);
+    relu_layer #(16, 16, 16, 1024) rl2(clk, reset[4], relu_out, relu_in2, convlayer2, relulayer2, done[4]);
+    relu_layer #(8, 8, 32, 1024) rl3(clk, reset[7], relu_out, relu_in3, convlayer3, relulayer3, done[7]);
+    relu_layer #(4, 4, 16, 1024) rl4(clk, reset[10], relu_out, relu_in4, convlayer4, relulayer4, done[10]);
+    relu_layer #(4, 4, 32, 1024) rl5(clk, reset[12], relu_out, relu_in5, convlayer5, relulayer5, done[12]);
+    relu_layer #(2, 2, 16, 1024) rl6(clk, reset[15], relu_out, relu_in6, convlayer6, relulayer6, done[15]);
+    relu_layer #(2, 2, 32, 1024) rl7(clk, reset[17], relu_out, relu_in7, convlayer7, relulayer7, done[17]);
+    relu_layer #(1, 1, 16, 1024) rl8(clk, reset[20], relu_out, relu_in8, convlayer8, relulayer8, done[20]);
     
     //initialize pool layers
     pool_layers_opt #(32, 32, 1024) pl1(clk, reset[2], relulayer1, poollayer1, done[2]);
