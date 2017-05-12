@@ -1513,8 +1513,7 @@ module network_opt #(parameter H = 32,
     TYPE conv3_in4[9*1024-1:0];
     TYPE conv3_in5[9*1024-1:0];
     assign conv3_in = (stage == 0) ? conv3_in1 : (stage == 3) ? conv3_in2 : (stage == 6) ? conv3_in3 : (stage == 4) ? conv3_in4 : conv3_in5;
-    
-    TYPE conv1_in1[1024-1:0];
+        TYPE conv1_in1[1024-1:0];
     TYPE conv1_in2[1024-1:0];
     TYPE conv1_in3[1024-1:0];
     TYPE conv1_in4[1024-1:0];
@@ -1532,6 +1531,19 @@ module network_opt #(parameter H = 32,
     TYPE conv1_weights3[1-1:0];
     TYPE conv1_weights4[1-1:0];
     assign conv1_weights = (stage == 9) ? conv1_weights1 : (stage == 14) ? conv1_weights2 : (stage == 19) ? conv1_weights3 : conv1_weights4;
+
+    TYPE conv3_bias1;
+    TYPE conv3_bias2;
+    TYPE conv3_bias3;
+    TYPE conv3_bias4;
+    TYPE conv3_bias5;
+    assign conv3_bias = (stage == 0) ? conv3_bias1 : (stage == 3) ? conv3_bias2 : (stage == 6) ? conv3_bias3 : (stage == 4) ? conv3_bias4 : conv3_bias5;
+    
+    TYPE conv1_bias1;
+    TYPE conv1_bias2;
+    TYPE conv1_bias3;
+    TYPE conv1_bias4;
+    assign conv1_bias = (stage == 9) ? conv1_bias1 : (stage == 14) ? conv1_bias2 : (stage == 19) ? conv1_bias3 : conv1_bias4;
     
     //initialize conv layers
     conv_mimo #(32, 32, 3, 8, 1024, 3) cm1(.clk(clk), .reset(reset[0]), .arr(img), .weights(weights1), .biases(bias1), .conv_block_out(conv3_out), .conv_block_in(conv3_in1), .conv_block_weights(conv3_weights1), .conv_block_bias(conv3_bias1), .out(convlayer1), .done(done[0]));
@@ -1565,11 +1577,11 @@ module network_opt #(parameter H = 32,
     relu_layer #(1, 1, 16, 1024) rl8(clk, reset[20], relu_out, relu_in8, convlayer8, relulayer8, done[20]);
     
     //initialize pool layers
-    pool_layers_opt #(32, 32, 1024) pl1(clk, reset[2], relulayer1, poollayer1, done[2]);
-    pool_layers_opt #(16, 16, 1024) pl2(clk, reset[5], relulayer2, poollayer2, done[5]);
-    pool_layers_opt #(8, 8, 1024) pl3(clk, reset[8], relulayer3, poollayer3, done[8]);
-    pool_layers_opt #(4, 4, 1024) pl5(clk, reset[13], relulayer5, poollayer5, done[13]);
-    pool_layers_opt #(2, 2, 1024) pl7(clk, reset[18], relulayer7, poollayer7, done[18]);
+    pool_layers_opt #(32, 32, 8, 1024) pl1(clk, reset[2], relulayer1, poollayer1, done[2]);
+    pool_layers_opt #(16, 16, 16, 1024) pl2(clk, reset[5], relulayer2, poollayer2, done[5]);
+    pool_layers_opt #(8, 8, 32, 1024) pl3(clk, reset[8], relulayer3, poollayer3, done[8]);
+    pool_layers_opt #(4, 4, 32, 1024) pl5(clk, reset[13], relulayer5, poollayer5, done[13]);
+    pool_layers_opt #(2, 2, 32, 1024) pl7(clk, reset[18], relulayer7, poollayer7, done[18]);
     
     //now run all layers
     logic ready;
