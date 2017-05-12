@@ -1514,7 +1514,6 @@ module network_opt #(parameter H = 32,
     TYPE conv3_in5[9*1024-1:0];
     assign conv3_in = (stage == 0) ? conv3_in1 : (stage == 3) ? conv3_in2 : (stage == 6) ? conv3_in3 : (stage == 4) ? conv3_in4 : conv3_in5;
     
-
     TYPE conv1_in1[1024-1:0];
     TYPE conv1_in2[1024-1:0];
     TYPE conv1_in3[1024-1:0];
