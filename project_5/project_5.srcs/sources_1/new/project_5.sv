@@ -1513,6 +1513,19 @@ module network_opt #(parameter H = 32,
     TYPE conv3_in5[9*1024-1:0];
     assign conv3_in = (stage == 0) ? conv3_in1 : (stage == 3) ? conv3_in2 : (stage == 6) ? conv3_in3 : (stage == 4) ? conv3_in4 : conv3_in5;
     
+    TYPE conv3_bias1;
+    TYPE conv3_bias2;
+    TYPE conv3_bias3;
+    TYPE conv3_bias4;
+    TYPE conv3_bias5;
+    assign conv3_bias = (stage == 0) ? conv3_bias1 : (stage == 3) ? conv3_bias2 : (stage == 6) ? conv3_bias3 : (stage == 4) ? conv3_bias4 : conv3_bias5;
+    
+    TYPE conv1_bias1;
+    TYPE conv1_bias2;
+    TYPE conv1_bias3;
+    TYPE conv1_bias4;
+    assign conv1_bias = (stage == 9) ? conv1_bias1 : (stage == 14) ? conv1_bias2 : (stage == 19) ? conv1_bias3 : conv1_bias4;
+    
     //initialize conv layers
     conv_mimo #(32, 32, 3, 8, 1024, 3) cm1(.clk(clk), .reset(reset[0]), .arr(img), .weights(weights1), .biases(bias1), .conv_block_out(conv3_out), .conv_block_in(conv3_in1), .conv_block_weights(conv3_weights), .conv_block_bias(conv3_bias), .out(convlayer1), .done(done[0]));
     conv_mimo #(16, 16, 8, 16, 1024, 3) cm2(clk, reset[3], poollayer1, weights2, bias2, conv3_out, conv3_in2, conv3_weights, conv3_bias, convlayer2, done[3]);
