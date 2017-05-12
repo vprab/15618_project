@@ -1505,7 +1505,8 @@ module network_opt #(parameter H = 32,
 //         output TYPE conv_block_bias,
 //         output       TYPE out[K-1:0][H-1:0][W-1:0],
 //         output logic done);
-
+    int stage = 0;
+    
     TYPE conv3_in1[9*1024-1:0];
     TYPE conv3_in2[9*1024-1:0];
     TYPE conv3_in3[9*1024-1:0];
@@ -1513,16 +1514,36 @@ module network_opt #(parameter H = 32,
     TYPE conv3_in5[9*1024-1:0];
     assign conv3_in = (stage == 0) ? conv3_in1 : (stage == 3) ? conv3_in2 : (stage == 6) ? conv3_in3 : (stage == 4) ? conv3_in4 : conv3_in5;
     
+
+    TYPE conv1_in1[1024-1:0];
+    TYPE conv1_in2[1024-1:0];
+    TYPE conv1_in3[1024-1:0];
+    TYPE conv1_in4[1024-1:0];
+    assign conv1_in = (stage == 9) ? conv1_in1 : (stage == 14) ? conv1_in2 : (stage == 19) ? conv1_in3 : conv1_in4;
+    
+    TYPE conv3_weights1[9-1:0];
+    TYPE conv3_weights2[9-1:0];
+    TYPE conv3_weights3[9-1:0];
+    TYPE conv3_weights4[9-1:0];
+    TYPE conv3_weights5[9-1:0];
+    assign conv3_weights = (stage == 0) ? conv3_weights1 : (stage == 3) ? conv3_weights2 : (stage == 6) ? conv3_weights3 : (stage == 4) ? conv3_weights4 : conv3_weights5;
+
+    TYPE conv1_weights1[1-1:0];
+    TYPE conv1_weights2[1-1:0];
+    TYPE conv1_weights3[1-1:0];
+    TYPE conv1_weights4[1-1:0];
+    assign conv1_weights = (stage == 9) ? conv1_weights1 : (stage == 14) ? conv1_weights2 : (stage == 19) ? conv1_weights3 : conv1_weights4;
+    
     //initialize conv layers
-    conv_mimo #(32, 32, 3, 8, 1024, 3) cm1(.clk(clk), .reset(reset[0]), .arr(img), .weights(weights1), .biases(bias1), .conv_block_out(conv3_out), .conv_block_in(conv3_in1), .conv_block_weights(conv3_weights), .conv_block_bias(conv3_bias), .out(convlayer1), .done(done[0]));
-    conv_mimo #(16, 16, 8, 16, 1024, 3) cm2(clk, reset[3], poollayer1, weights2, bias2, conv3_out, conv3_in2, conv3_weights, conv3_bias, convlayer2, done[3]);
-    conv_mimo #(8, 8, 16, 32, 1024, 3) cm3(clk, reset[6], poollayer2, weights3, bias3, conv3_out, conv3_in3, conv3_weights, conv3_bias, convlayer3, done[6]);
-    conv_mimo #(4, 4, 32, 16, 1024, 1) cm4(clk, reset[9], poollayer3, weights4, bias4, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer4, done[9]);
-    conv_mimo #(4, 4, 16, 32, 1024, 3) cm5(clk, reset[11], relulayer4, weights5, bias5, conv3_out, conv3_in4, conv3_weights, conv3_bias, convlayer5, done[11]);
-    conv_mimo #(2, 2, 32, 16, 1024, 1) cm6(clk, reset[14], poollayer5, weights6, bias6, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer6, done[14]);
-    conv_mimo #(2, 2, 16, 32, 1024, 3) cm7(clk, reset[16], relulayer6, weights7, bias7, conv3_out, conv3_in5, conv3_weights, conv3_bias, convlayer7, done[16]);
-    conv_mimo #(1, 1, 32, 16, 1024, 1) cm8(clk, reset[19], poollayer7, weights8, bias8, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer8, done[19]);
-    conv_mimo #(1, 1, 16, 10, 1024, 1) cm9(clk, reset[21], relulayer8, weights9, bias9, conv1_out, conv1_in, conv1_weights, conv1_bias, convlayer9, done[21]);
+    conv_mimo #(32, 32, 3, 8, 1024, 3) cm1(.clk(clk), .reset(reset[0]), .arr(img), .weights(weights1), .biases(bias1), .conv_block_out(conv3_out), .conv_block_in(conv3_in1), .conv_block_weights(conv3_weights1), .conv_block_bias(conv3_bias1), .out(convlayer1), .done(done[0]));
+    conv_mimo #(16, 16, 8, 16, 1024, 3) cm2(clk, reset[3], poollayer1, weights2, bias2, conv3_out, conv3_in2, conv3_weights2, conv3_bias2, convlayer2, done[3]);
+    conv_mimo #(8, 8, 16, 32, 1024, 3) cm3(clk, reset[6], poollayer2, weights3, bias3, conv3_out, conv3_in3, conv3_weights3, conv3_bias3, convlayer3, done[6]);
+    conv_mimo #(4, 4, 32, 16, 1024, 1) cm4(clk, reset[9], poollayer3, weights4, bias4, conv1_out, conv1_in1, conv1_weights1, conv1_bias1, convlayer4, done[9]);
+    conv_mimo #(4, 4, 16, 32, 1024, 3) cm5(clk, reset[11], relulayer4, weights5, bias5, conv3_out, conv3_in4, conv3_weights4, conv3_bias4, convlayer5, done[11]);
+    conv_mimo #(2, 2, 32, 16, 1024, 1) cm6(clk, reset[14], poollayer5, weights6, bias6, conv1_out, conv1_in2, conv1_weights2, conv1_bias2, convlayer6, done[14]);
+    conv_mimo #(2, 2, 16, 32, 1024, 3) cm7(clk, reset[16], relulayer6, weights7, bias7, conv3_out, conv3_in5, conv3_weights5, conv3_bias5, convlayer7, done[16]);
+    conv_mimo #(1, 1, 32, 16, 1024, 1) cm8(clk, reset[19], poollayer7, weights8, bias8, conv1_out, conv1_in3, conv1_weights3, conv1_bias3, convlayer8, done[19]);
+    conv_mimo #(1, 1, 16, 10, 1024, 1) cm9(clk, reset[21], relulayer8, weights9, bias9, conv1_out, conv1_in4, conv1_weights4, conv1_bias4, convlayer9, done[21]);
 
     //initialize relu layers
     relu_layer #(32, 32, 8, 1024) rl1(clk, reset[1], relu_out, relu_in, convlayer1, relulayer1, done[1]);
@@ -1543,7 +1564,7 @@ module network_opt #(parameter H = 32,
     
     //now run all layers
     logic ready;
-    int stage = 0;
+
     assign ready = done[stage];
     assign finished = (stage >= 21);
     
