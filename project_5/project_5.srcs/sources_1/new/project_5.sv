@@ -822,9 +822,10 @@ module setzero2d #(parameter H = 8, parameter W = 8)
     generate
         for(i = 0; i < H; i++) begin
             for(j = 0; j < W; j++) begin
-                always_ff @(posedge reset) begin
-                    arr[i][j] <= 0;
-                end
+                assign arr[i][j] = 0;
+//                always_ff @(posedge reset) begin
+//                    arr[i][j] <= 0;
+//                end
             end
         end
     endgenerate 
@@ -983,7 +984,7 @@ module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
      output logic done);
 
     int i = 0;
-    assign done = (i == D);
+    assign done = (i == D-1);
     
     TYPE siso_arr[H-1:0][W-1:0];
     TYPE siso_weights[S*S-1:0];
@@ -992,7 +993,7 @@ module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
     TYPE tmp[H-1:0][W-1:0];
     add2d #(H,W) A(siso_out, out, tmp);
     
-    logic siso_done;  
+    logic siso_done, siso_reset;  
     conv_siso #(H, W, N, S) SISO(clk, siso_reset, siso_arr, siso_weights, bias, 
                                  conv_block_out, conv_block_in, conv_block_weights, conv_block_bias,
                                  siso_out, siso_done);
@@ -1001,13 +1002,13 @@ module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
     setzero2d SZ(reset, out_tmp);
 
     always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin   
+        if (reset) begin
             out <= out_tmp;         
             i <= 0;
         end else if (~done & siso_done) begin
+            out <= siso_out;
             siso_weights <= weights[i];
             siso_arr <= arr[i];
-            out <= tmp;
             i <= i+1;
         end
     end
@@ -1076,11 +1077,10 @@ module conv_mimo #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
     int i = 0;
     assign done = (i == K);
     
-    logic miso_reset;
-    TYPE miso_weights[D-1:0][9-1:0];
+    logic miso_reset, miso_done;
+    TYPE miso_weights[D-1:0][S*S-1:0];
     TYPE miso_bias;
     TYPE miso_out[H-1:0][W-1:0];
-    logic miso_done;
     conv_miso #(H, W, D, N, S) MISO(clk, miso_reset, arr, miso_weights, miso_bias, 
                                     conv_block_out, conv_block_in, conv_block_weights, conv_block_bias,
                                     miso_out, miso_done);
@@ -1090,13 +1090,59 @@ module conv_mimo #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
         if (reset) begin
             i <= 0;
         end else if (~done & miso_done) begin
+            out[i] <= miso_out;
             miso_weights <= weights[i];
             miso_bias <= biases[i];
-            out[i] <= miso_out;
             i <= i+1;
         end
     end
 endmodule
+
+module test_conv_mimo();
+    TYPE arr[3-1:0][8-1:0][8-1:0];
+    TYPE out[3-1:0][8-1:0][8-1:0];
+    TYPE weights[3-1:0][3-1:0][3*3-1:0];
+    TYPE biases[3-1:0];
+    
+    genvar i, j, k;
+    generate for (k = 0; k < 3; k++) begin
+        for (i = 0; i < 8; i++) begin
+            for (j = 0; j < 8; j++) begin
+                assign arr[k][i][j] = 64*k + 8*i+j;
+            end
+        end
+    end
+    
+    for (k = 0; k < 3; k++) begin
+        for (j = 0; j < 3; j++) begin
+            for (i = 0; i < 9; i++) begin
+                assign weights[k][j][i] = 1;
+            end
+        end
+    end endgenerate;
+    
+    assign biases[0] = 2;
+    assign biases[1] = 2;
+    assign biases[2] = 2;
+    
+    TYPE conv_block_in[3*3*1-1:0];
+    TYPE conv_block_out[1-1:0];
+    TYPE conv_block_weights[3*3-1:0];
+    TYPE conv_block_bias;
+    conv_block #(1, 3) cb(conv_block_in, conv_block_weights, conv_block_bias, conv_block_out);
+    
+    logic done, clk, reset;
+    initial begin
+        clk = 1;
+        reset = 1;
+        #10
+        reset = 0;
+        forever #10 clk = ~clk;
+    end
+    
+    conv_mimo #(8, 8, 3, 3, 1, 3) cm(.*);
+
+endmodule: test_conv_mimo
 
 module relu_block #(parameter N = 4)
     (input TYPE inp[N-1:0],
