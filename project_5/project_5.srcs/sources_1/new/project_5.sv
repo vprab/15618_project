@@ -619,7 +619,7 @@ endmodule: top4
 
 module top (input logic clk, 
             input logic switch[7:0],
-            output logic led[7:0]);    
+            output logic led[7:0]);
 
     genvar i, j, k;
     
