@@ -722,10 +722,12 @@ module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
                                  conv_block_out, conv_block_in, conv_block_weights, conv_block_bias,
                                  siso_out, siso_done);
     assign siso_reset = reset | siso_done;
-    setzero2d SZ(reset, out);
+    TYPE out_tmp[H-1:0][W-1:0];
+    setzero2d SZ(reset, out_tmp);
 
     always_ff @(posedge clk, posedge reset) begin
-        if (reset) begin            
+        if (reset) begin   
+            out <= out_tmp;         
             i <= 0;
         end else if (~done & siso_done) begin
             siso_weights <= weights[i];
@@ -736,6 +738,48 @@ module conv_miso #(parameter H = 8, parameter W = 8, parameter D = 3, parameter 
     end
     
 endmodule
+
+module test_conv_miso();
+    TYPE arr[3-1:0][8-1:0][8-1:0];
+    TYPE out[8-1:0][8-1:0];
+    TYPE weights[3-1:0][3*3-1:0];
+    TYPE bias;
+    
+    genvar i, j, k;
+    generate for (k = 0; k < 3; k++) begin
+        for (i = 0; i < 8; i++) begin
+            for (j = 0; j < 8; j++) begin
+                assign arr[k][i][j] = 64*k + 8*i+j;
+            end
+        end
+    end
+    
+    for (j = 0; j < 3; j++) begin
+        for (i = 0; i < 9; i++) begin
+            assign weights[j][i] = 1;
+        end
+    end endgenerate;
+    
+    assign bias = 2;
+    
+    TYPE conv_block_in[3*3*1-1:0];
+    TYPE conv_block_out[1-1:0];
+    TYPE conv_block_weights[3*3-1:0];
+    TYPE conv_block_bias;
+    conv_block #(1, 3) cb(conv_block_in, conv_block_weights, conv_block_bias, conv_block_out);
+    
+    logic done, clk, reset;
+    initial begin
+        clk = 1;
+        reset = 1;
+        #10
+        reset = 0;
+        forever #10 clk = ~clk;
+    end
+    
+    conv_miso #(8, 8, 3, 1, 3) cs(.*);
+
+endmodule: test_conv_miso
 
 //H, W: height and width
 //D, K: in and out dim
@@ -857,6 +901,74 @@ module test_relu_layer ();
     relu_layer #(8, 8, 4, 4) rl(.*);
 endmodule: test_relu_layer
 
+module up_pool_opt #(parameter H = 8, parameter W = 8, parameter N = 4)
+    (input clk,
+     input reset,
+     input TYPE arr[H-1:0][W-1:0],
+     input TYPE pool_fn_res[N-1:0],
+     output TYPE pool_fn_vals[4*N-1:0],
+     output TYPE pooled[H/2-1:0][W/2-1:0],
+     output logic done);
+     
+     int i = 0;
+     assign done = (i >= H*W/4 + N);
+     
+     integer j, row, col, old_row, old_col;
+     logic in = 1;
+     
+     always_ff @(posedge clk) begin
+        if (reset) begin
+            i = 0;
+            in = 1;
+        end else if (~done) begin
+            for (j = 0; j < N; j++) begin
+                if (~in) begin
+                    old_row = (i-N+j)/(W/2);
+                    old_col = (i-N+j)%(W/2);
+                    pooled[old_row][old_col] = pool_fn_res[j];
+                end else begin
+                    row = (i+j)/(W/2);
+                    col = (i+j)%(W/2);
+                    pool_fn_vals[4*j] = arr[2*row][2*col];
+                    pool_fn_vals[4*j+1] = arr[2*row][2*col + 1];
+                    pool_fn_vals[4*j+2] = arr[2*row + 1][2*col];
+                    pool_fn_vals[4*j+3] = arr[2*row + 1][2*col + 1];
+                end
+            end
+            
+            in = ~in;
+            i = i+N;
+        end
+     end
+endmodule: up_pool_opt
+
+module test_up_pool_opt #(parameter H = 8, parameter W = 8, parameter N = 16) ();
+    TYPE pool_fn_res[N-1:0];
+    TYPE pool_fn_vals[4*N-1:0];
+    pool_fn_opt #(N) p(pool_fn_vals, pool_fn_res);
+
+    TYPE arr[H-1:0][W-1:0];
+    genvar i, j;
+    generate for (i = 0; i < H; i++) begin
+        for (j = 0; j < W; j++) begin
+            assign arr[i][j] = W*i + j;
+        end
+    end endgenerate
+    
+    logic clk;
+    always begin
+        #5 clk = 1;
+        #5 clk = 0;
+    end
+    
+    logic reset = 0;
+    logic done = 0;
+    
+    TYPE pooled[H/2-1:0][W/2-1:0];
+    up_pool_opt #(H, W, N) po(clk, reset, arr, pool_fn_res, pool_fn_vals, pooled, done);
+    
+endmodule: test_up_pool_opt
+
 module pool_opt #(parameter H = 8, parameter W = 8, parameter N = 4)
     (input clk,
      input reset,
@@ -898,7 +1010,7 @@ module test_pool_opt #(parameter H = 8, parameter W = 8, parameter N = 16) ();
     TYPE pool_fn_res[N-1:0];
     TYPE pool_fn_vals[4*N-1:0];
     pool_fn_opt #(N) p(pool_fn_vals, pool_fn_res);
-    
+
     TYPE arr[H-1:0][W-1:0];
     genvar i, j;
     generate for (i = 0; i < H; i++) begin
