@@ -617,7 +617,7 @@ module top4 #(parameter outD = 10, parameter N = 1)
     
 endmodule: top4
 
-module top (input logic clk, 
+module top21 (input logic clk, 
             input logic switch[7:0],
             output logic led[7:0]);
 
@@ -757,7 +757,7 @@ module top (input logic clk,
         led[0] <= pred[0];
     end
 
-endmodule: top
+endmodule: top21
 
 module top8 (input logic clk, 
             input logic switch[7:0],
@@ -917,17 +917,21 @@ module conv_siso #(parameter H = 8, parameter W = 8, parameter N = 4, S = 3)
                 old_col = (i-N+j)%W;
                 out[old_row][old_col] = conv_block_out[j];
                 
-                conv_block_in[S*S*j] = row-1 < 0 | col-1 < 0 | row-1 >= H | col-1 >= W ? 0 : arr[row-1][col-1];
-                conv_block_in[S*S*j+1] = row-1 < 0 | col < 0 | row-1 >= H | col >= W ? 0 : arr[row-1][col];
-                conv_block_in[S*S*j+2] = row-1 < 0 | col+1 < 0 | row-1 >= H | col+1 >= W ? 0 : arr[row-1][col+1];
-                conv_block_in[S*S*j+3] = row < 0 | col-1 < 0 | row >= H | col-1 >= W ? 0 : arr[row][col-1];
-                conv_block_in[S*S*j+4] = row < 0 | col < 0 | row >= H | col >= W ? 0 : arr[row][col];
-                conv_block_in[S*S*j+5] = row < 0 | col+1 < 0 | row >= H | col+1 >= W ? 0 : arr[row][col+1];
-                conv_block_in[S*S*j+6] = row+1 < 0 | col-1 < 0 | row+1 >= H | col-1 >= W ? 0 : arr[row+1][col-1];
-                conv_block_in[S*S*j+7] = row+1 < 0 | col < 0 | row+1 >= H | col >= W ? 0 : arr[row+1][col];
-                conv_block_in[S*S*j+8] = row+1 < 0 | col+1 < 0 | row+1 >= H | col+1 >= W ? 0 : arr[row+1][col+1];
+                if(S==3) begin
+                    conv_block_in[S*S*j] = row-1 < 0 | col-1 < 0 | row-1 >= H | col-1 >= W ? 0 : arr[row-1][col-1];
+                    conv_block_in[S*S*j+1] = row-1 < 0 | col < 0 | row-1 >= H | col >= W ? 0 : arr[row-1][col];
+                    conv_block_in[S*S*j+2] = row-1 < 0 | col+1 < 0 | row-1 >= H | col+1 >= W ? 0 : arr[row-1][col+1];
+                    conv_block_in[S*S*j+3] = row < 0 | col-1 < 0 | row >= H | col-1 >= W ? 0 : arr[row][col-1];
+                    conv_block_in[S*S*j+4] = row < 0 | col < 0 | row >= H | col >= W ? 0 : arr[row][col];
+                    conv_block_in[S*S*j+5] = row < 0 | col+1 < 0 | row >= H | col+1 >= W ? 0 : arr[row][col+1];
+                    conv_block_in[S*S*j+6] = row+1 < 0 | col-1 < 0 | row+1 >= H | col-1 >= W ? 0 : arr[row+1][col-1];
+                    conv_block_in[S*S*j+7] = row+1 < 0 | col < 0 | row+1 >= H | col >= W ? 0 : arr[row+1][col];
+                    conv_block_in[S*S*j+8] = row+1 < 0 | col+1 < 0 | row+1 >= H | col+1 >= W ? 0 : arr[row+1][col+1];
+                end else begin
+                    conv_block_in[j] = arr[row][col];
+                end
+                  
             end
-            
             i = i+N;
         end
      end  
@@ -1612,6 +1616,203 @@ module network_opt #(parameter H = 32,
     
 endmodule: network_opt
 
+
+module network_opt2 #(parameter H = 32, 
+                     parameter W = 32, 
+                     parameter N = 1024)
+    (input TYPE img[3-1:0][H-1:0][W-1:0],
+     input TYPE weights1[1-1:0][3-1:0][3*3-1:0],
+     input TYPE bias1[1-1:0],
+     input TYPE weights2[2-1:0][1-1:0][3*3-1:0],
+     input TYPE bias2[2-1:0],
+     input TYPE weights3[4-1:0][2-1:0][3*3-1:0],
+     input TYPE bias3[4-1:0],
+     input TYPE weights4[2-1:0][4-1:0][1*1-1:0],
+     input TYPE bias4[2-1:0],
+     input TYPE weights5[4-1:0][2-1:0][3*3-1:0],
+     input TYPE bias5[4-1:0],
+     input TYPE weights6[2-1:0][4-1:0][1*1-1:0],
+     input TYPE bias6[2-1:0],
+     input TYPE weights7[4-1:0][2-1:0][3*3-1:0],
+     input TYPE bias7[4-1:0],
+     input TYPE weights8[2-1:0][4-1:0][1*1-1:0],
+     input TYPE bias8[2-1:0],
+     input TYPE weights9[1-1:0][2-1:0][1*1-1:0],
+     input TYPE bias9[1-1:0],
+     input logic clk,
+     input logic reset_,
+     output logic finished,
+     output TYPE pred[1-1:0]); 
+    
+    //initialize memory
+    TYPE convlayer1[1-1:0][H-1:0][W-1:0];
+    TYPE relulayer1[1-1:0][H-1:0][W-1:0];
+    TYPE poollayer1[1-1:0][H/2 - 1:0][W/2 - 1:0];    
+    TYPE convlayer2[2-1:0][H/2-1:0][W/2-1:0];
+    TYPE relulayer2[2-1:0][H/2-1:0][W/2-1:0];
+    TYPE poollayer2[2-1:0][H/4 - 1:0][W/4 - 1:0];
+    TYPE convlayer3[4-1:0][H/4 - 1:0][W/4 - 1:0];
+    TYPE relulayer3[4-1:0][H/4 - 1:0][W/4 - 1:0];
+    TYPE poollayer3[4-1:0][H/8-1:0][W/8-1:0];
+    TYPE convlayer4[2-1:0][H/8 - 1:0][W/8 - 1:0];
+    TYPE relulayer4[2-1:0][H/8 - 1:0][W/8 - 1:0];
+    TYPE convlayer5[4-1:0][H/8 - 1:0][W/8 - 1:0];
+    TYPE relulayer5[4-1:0][H/8 - 1:0][W/8 - 1:0];
+    TYPE poollayer5[4-1:0][H/16-1:0][W/16-1:0];
+    TYPE convlayer6[2-1:0][H/16 - 1:0][W/16 - 1:0];
+    TYPE relulayer6[2-1:0][H/16 - 1:0][W/16 - 1:0];
+    TYPE convlayer7[4-1:0][H/16 - 1:0][W/16 - 1:0];
+    TYPE relulayer7[4-1:0][H/16 - 1:0][W/16 - 1:0];
+    TYPE poollayer7[4-1:0][H/32-1:0][W/32-1:0];
+    TYPE convlayer8[2-1:0][H/32 - 1:0][W/32 - 1:0];
+    TYPE relulayer8[2-1:0][H/32 - 1:0][W/32 - 1:0];
+    TYPE convlayer9[1-1:0][0:0][0:0];
+    
+    //initialize blocks
+    
+    TYPE conv3_in[9*N-1:0];
+    TYPE conv3_weights[9-1:0];
+    TYPE conv3_bias;
+    TYPE conv3_out[N-1:0];
+    conv_block #(N, 3) C3(conv3_in, conv3_weights, conv3_bias, conv3_out);
+    
+    TYPE conv1_in[N-1:0];
+    TYPE conv1_weights[0:0];
+    TYPE conv1_bias;
+    TYPE conv1_out[N-1:0];
+    conv_block #(N, 1) C1(conv1_in, conv1_weights, conv1_bias, conv1_out);
+    
+    TYPE relu_in[N-1:0];
+    TYPE relu_out[N-1:0];
+    relu_block #(N) R(relu_in, relu_out);
+    
+    TYPE pool_in[4*N-1:0];
+    TYPE pool_out[N-1:0];
+    pool_fn_opt #(N) P(pool_in, pool_out);
+    
+    //use this to control the computation
+    logic [21:0] done;
+    logic [21:0] reset;
+    
+//    module conv_mimo #(parameter H = 8, parameter W = 8, parameter D = 3, parameter K = 3, parameter N = 4, S = 3)
+//        (input logic clk,
+//         input logic  reset,
+//         input        TYPE arr[D-1:0][H-1:0][W-1:0],
+//         input        TYPE weights[K-1:0][D-1:0][S*S-1:0],
+//         input        TYPE biases[K-1:0],
+//         input TYPE conv_block_out[N-1:0],
+//         output TYPE conv_block_in[S*S*N-1:0],
+//         output TYPE conv_block_weights[S*S-1:0],
+//         output TYPE conv_block_bias,
+//         output       TYPE out[K-1:0][H-1:0][W-1:0],
+//         output logic done);
+    int stage = 0;
+    
+    TYPE conv3_in1[9*N-1:0];
+    TYPE conv3_in2[9*N-1:0];
+    TYPE conv3_in3[9*N-1:0];
+    TYPE conv3_in4[9*N-1:0];
+    TYPE conv3_in5[9*N-1:0];
+    assign conv3_in = (stage == 0) ? conv3_in1 : (stage == 3) ? conv3_in2 : (stage == 6) ? conv3_in3 : (stage == 4) ? conv3_in4 : conv3_in5;
+    TYPE conv1_in1[N-1:0];
+    TYPE conv1_in2[N-1:0];
+    TYPE conv1_in3[N-1:0];
+    TYPE conv1_in4[N-1:0];
+    assign conv1_in = (stage == 9) ? conv1_in1 : (stage == 14) ? conv1_in2 : (stage == 19) ? conv1_in3 : conv1_in4;
+    
+    TYPE conv3_weights1[9-1:0];
+    TYPE conv3_weights2[9-1:0];
+    TYPE conv3_weights3[9-1:0];
+    TYPE conv3_weights4[9-1:0];
+    TYPE conv3_weights5[9-1:0];
+    assign conv3_weights = (stage == 0) ? conv3_weights1 : (stage == 3) ? conv3_weights2 : (stage == 6) ? conv3_weights3 : (stage == 4) ? conv3_weights4 : conv3_weights5;
+
+    TYPE conv1_weights1[1-1:0];
+    TYPE conv1_weights2[1-1:0];
+    TYPE conv1_weights3[1-1:0];
+    TYPE conv1_weights4[1-1:0];
+    assign conv1_weights = (stage == 9) ? conv1_weights1 : (stage == 14) ? conv1_weights2 : (stage == 19) ? conv1_weights3 : conv1_weights4;
+
+    TYPE conv3_bias1;
+    TYPE conv3_bias2;
+    TYPE conv3_bias3;
+    TYPE conv3_bias4;
+    TYPE conv3_bias5;
+    assign conv3_bias = (stage == 0) ? conv3_bias1 : (stage == 3) ? conv3_bias2 : (stage == 6) ? conv3_bias3 : (stage == 4) ? conv3_bias4 : conv3_bias5;
+    
+    TYPE conv1_bias1;
+    TYPE conv1_bias2;
+    TYPE conv1_bias3;
+    TYPE conv1_bias4;
+    assign conv1_bias = (stage == 9) ? conv1_bias1 : (stage == 14) ? conv1_bias2 : (stage == 19) ? conv1_bias3 : conv1_bias4;
+    
+    //initialize conv layers
+    conv_mimo #(32, 32, 3, 1, N, 3) cm1(clk, reset[0], img,      weights1, bias1, conv3_out, conv3_in1, conv3_weights1, conv3_bias1, convlayer1, done[0]);
+    conv_mimo #(16, 16, 1, 2, N, 3) cm2(clk, reset[3], poollayer1, weights2, bias2, conv3_out, conv3_in2, conv3_weights2, conv3_bias2, convlayer2, done[3]);
+    conv_mimo #(8, 8, 2, 4, N, 3) cm3(clk, reset[6], poollayer2, weights3, bias3, conv3_out, conv3_in3, conv3_weights3, conv3_bias3, convlayer3, done[6]);
+    conv_mimo #(4, 4, 4, 2, N, 1) cm4(clk, reset[9], poollayer3, weights4, bias4, conv1_out, conv1_in1, conv1_weights1, conv1_bias1, convlayer4, done[9]);
+    conv_mimo #(4, 4, 2, 4, N, 3) cm5(clk, reset[11], relulayer4, weights5, bias5, conv3_out, conv3_in4, conv3_weights4, conv3_bias4, convlayer5, done[11]);
+    conv_mimo #(2, 2, 4, 2, N, 1) cm6(clk, reset[14], poollayer5, weights6, bias6, conv1_out, conv1_in2, conv1_weights2, conv1_bias2, convlayer6, done[14]);
+    conv_mimo #(2, 2, 2, 4, N, 3) cm7(clk, reset[16], relulayer6, weights7, bias7, conv3_out, conv3_in5, conv3_weights5, conv3_bias5, convlayer7, done[16]);
+    conv_mimo #(1, 1, 4, 2, N, 1) cm8(clk, reset[19], poollayer7, weights8, bias8, conv1_out, conv1_in3, conv1_weights3, conv1_bias3, convlayer8, done[19]);
+    conv_mimo #(1, 1, 2, 1, N, 1) cm9(clk, reset[21], relulayer8, weights9, bias9, conv1_out, conv1_in4, conv1_weights4, conv1_bias4, convlayer9, done[21]);
+
+    TYPE relu_in1[N-1:0];;
+    TYPE relu_in2[N-1:0];
+    TYPE relu_in3[N-1:0];
+    TYPE relu_in4[N-1:0];
+    TYPE relu_in5[N-1:0];
+    TYPE relu_in6[N-1:0];
+    TYPE relu_in7[N-1:0];
+    TYPE relu_in8[N-1:0];
+    assign relu_in = (stage == 1) ? relu_in1 : (stage == 4) ? relu_in2 : (stage == 7) ? relu_in3 : (stage == 10) ? relu_in4 : (stage == 12) ? relu_in5 : (stage == 15) ? relu_in6 : (stage == 17) ? relu_in7 : relu_in8;
+    
+    //initialize relu layers
+    relu_layer #(32, 32, 1, N) rl1(clk, reset[1], relu_out, relu_in1, convlayer1, relulayer1, done[1]);
+    relu_layer #(16, 16, 2, N) rl2(clk, reset[4], relu_out, relu_in2, convlayer2, relulayer2, done[4]);
+    relu_layer #(8, 8, 4, N) rl3(clk, reset[7], relu_out, relu_in3, convlayer3, relulayer3, done[7]);
+    relu_layer #(4, 4, 2, N) rl4(clk, reset[10], relu_out, relu_in4, convlayer4, relulayer4, done[10]);
+    relu_layer #(4, 4, 4, N) rl5(clk, reset[12], relu_out, relu_in5, convlayer5, relulayer5, done[12]);
+    relu_layer #(2, 2, 2, N) rl6(clk, reset[15], relu_out, relu_in6, convlayer6, relulayer6, done[15]);
+    relu_layer #(2, 2, 4, N) rl7(clk, reset[17], relu_out, relu_in7, convlayer7, relulayer7, done[17]);
+    relu_layer #(1, 1, 2, N) rl8(clk, reset[20], relu_out, relu_in8, convlayer8, relulayer8, done[20]);
+    
+    //initialize pool layers
+    pool_layers_opt #(32, 32, 1, N) pl1(clk, reset[2], relulayer1, poollayer1, done[2]);
+    pool_layers_opt #(16, 16, 2, N) pl2(clk, reset[5], relulayer2, poollayer2, done[5]);
+    pool_layers_opt #(8, 8, 4, N) pl3(clk, reset[8], relulayer3, poollayer3, done[8]);
+    pool_layers_opt #(4, 4, 4, N) pl5(clk, reset[13], relulayer5, poollayer5, done[13]);
+    pool_layers_opt #(2, 2, 4, N) pl7(clk, reset[18], relulayer7, poollayer7, done[18]);
+    
+    //now run all layers
+    logic ready;
+
+    assign ready = done[stage];
+    assign finished = (stage >= 21);
+    
+    always_ff @(posedge clk, posedge reset_) begin
+        if (reset_) begin
+            stage <= 0;
+            reset <= 21'h1FFFF;
+        end else if (ready & ~finished) begin
+            stage <= stage + 1; //reset that layer
+            reset[stage] <= 1;
+        end else begin
+            stage <= stage;
+            reset <= 21'h0;
+        end
+    end
+    
+    //just some minor reshaping
+    genvar chan;
+    generate 
+        for(chan = 0; chan < 1; chan++) begin
+            assign pred[chan] = convlayer9[chan][0][0];
+        end
+    endgenerate
+    
+endmodule: network_opt2
+
 module test_network_opt();
     TYPE img[3-1:0][32-1:0][32-1:0];
     TYPE weights1[8-1:0][3-1:0][3*3-1:0];
@@ -1767,12 +1968,324 @@ module test_network_opt();
         clk = 1;
         #10
         reset_ = 0;
-        forever clk = ~clk;
+        forever #10 clk = ~clk;
     end
 
     network_opt #(32, 32, 1024) no(.*);
 
 endmodule: test_network_opt
+
+
+module top(input logic clk,
+    input logic switch[7:0],
+    output logic led[7:0]);
+    
+    TYPE img[3-1:0][32-1:0][32-1:0];
+    TYPE weights1[1-1:0][3-1:0][3*3-1:0];
+    TYPE bias1[1-1:0];
+    TYPE weights2[2-1:0][1-1:0][3*3-1:0];
+    TYPE bias2[2-1:0];
+    TYPE weights3[4-1:0][2-1:0][3*3-1:0];
+    TYPE bias3[4-1:0];
+    TYPE weights4[2-1:0][4-1:0][1*1-1:0];
+    TYPE bias4[2-1:0];
+    TYPE weights5[4-1:0][2-1:0][3*3-1:0];
+    TYPE bias5[4-1:0];
+    TYPE weights6[2-1:0][4-1:0][1*1-1:0];
+    TYPE bias6[2-1:0];
+    TYPE weights7[4-1:0][2-1:0][3*3-1:0];
+    TYPE bias7[4-1:0];
+    TYPE weights8[2-1:0][4-1:0][1*1-1:0];
+    TYPE bias8[2-1:0];
+    TYPE weights9[1-1:0][2-1:0][1*1-1:0];
+    TYPE bias9[1-1:0];
+    logic reset_;
+    
+    assign reset = switch[0];
+     
+    logic finished;
+    TYPE pred[1-1:0];
+    
+    
+    TYPE img_og[3072-1:0];
+    cifar2 I(img_og);
+    
+    genvar i, j, k;
+    TYPE img_rs[3-1:0][32-1:0][32-1:0];
+    generate for (i = 0; i < 3; i = i+1) begin
+        for (j = 0; j < 32; j = j+1) begin
+            for (k = 0; k < 32; k = k+1) begin
+                assign img[i][j][k] = img_og[32*32*i + 32*j + k];
+            end
+        end
+    end
+    
+    TYPE weights1_og[1*3*3*3-1:0];
+    TYPE bias1_og[1-1:0];
+    TYPE weights2_og[2*1*3*3-1:0];
+    TYPE bias2_og[2-1:0];
+    TYPE weights3_og[4*2*3*3-1:0];
+    TYPE bias3_og[4-1:0];
+    TYPE weights4_og[2*4*1*1-1:0];
+    TYPE bias4_og[2-1:0];
+    TYPE weights5_og[4*2*3*3-1:0];
+    TYPE bias5_og[4-1:0];
+    TYPE weights6_og[2*4*1*1-1:0];
+    TYPE bias6_og[2-1:0];
+    TYPE weights7_og[4*2*3*3-1:0];
+    TYPE bias7_og[4-1:0];
+    TYPE weights8_og[2*4*1*1-1:0];
+    TYPE bias8_og[2-1:0];
+    TYPE weights9_og[1*1*1*2-1:0];
+    TYPE bias9_og[1-1:0];
+    
+    parameters2 p(weights1_og, bias1_og, 
+                  weights2_og, bias2_og, 
+                  weights3_og, bias3_og, 
+                  weights4_og, bias4_og, 
+                  weights5_og, bias5_og, 
+                  weights6_og, bias6_og, 
+                  weights7_og, bias7_og, 
+                  weights8_og, bias8_og, 
+                  weights9_og, bias9_og);
+    
+    for (i = 0; i < 1; i = i+1) begin
+        for (j = 0; j < 3; j = j+1) begin
+            for (k = 0; k < 3*3; k++) begin
+                assign weights1[i][j][k] = weights1_og[3*3*3*i + j];
+            end
+        end
+    end
+    
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 1; j = j+1) begin
+            for (k = 0; k < 3*3; k++) begin
+                assign weights2[i][j][k] = weights2_og[3*3*1*i + j];
+            end
+        end
+    end
+    
+    for (i = 0; i < 4; i = i+1) begin
+        for (j = 0; j < 2; j = j+1) begin
+            for (k = 0; k < 3*3; k++) begin
+                assign weights3[i][j][k] = weights3_og[3*3*2*i + j];
+            end
+        end
+    end
+    
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 4; j = j+1) begin
+            for (k = 0; k < 1*1; k++) begin
+                assign weights4[i][j][k] = weights4_og[1*1*4*i + j];
+            end
+        end
+    end
+        
+    for (i = 0; i < 4; i = i+1) begin
+        for (j = 0; j < 2; j = j+1) begin
+            for (k = 0; k < 3*3; k++) begin
+                assign weights5[i][j][k] = weights5_og[3*3*2*i + j];
+            end
+        end
+    end
+        
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 4; j = j+1) begin
+            for(k = 0; k < 1*1; k = k+1) begin
+                assign weights6[i][j][k] = weights6_og[1*4*i + j];
+            end
+        end
+    end
+        
+    for (i = 0; i < 4; i = i+1) begin
+        for (j = 0; j < 2; j = j+1) begin
+            for (k = 0; k < 3*3; k++) begin
+                assign weights7[i][j][k] = weights7_og[3*3*2*i + j];
+            end
+        end
+    end
+        
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 4; j = j+1) begin
+            for(k = 0; k < 1*1; k+=1) begin
+                assign weights8[i][j][k] = weights8_og[1*4*i + j];
+            end
+        end
+    end
+        
+    for (i = 0; i < 1; i = i+1) begin
+        for (j = 0; j < 2; j = j+1) begin
+            for (k = 0; k < 1*1; k++) begin
+                assign weights9[i][j][k] = weights9_og[1*1*2*i + j];
+            end
+        end
+    end endgenerate
+
+    network_opt2 #(32, 32, 32) no(.*); //replace 2 with 1024
+
+    assign led[0] = pred[0][0];
+
+endmodule: top
+
+module topq(input logic clk,
+    input logic switch[7:0],
+    output logic led[7:0]);
+    
+    TYPE img[3-1:0][32-1:0][32-1:0];
+    TYPE weights1[8-1:0][3-1:0][3*3-1:0];
+    TYPE bias1[8-1:0];
+    TYPE weights2[16-1:0][3-1:0][3*8-1:0];
+    TYPE bias2[16-1:0];
+    TYPE weights3[32-1:0][3-1:0][3*16-1:0];
+    TYPE bias3[32-1:0];
+    TYPE weights4[16-1:0][1-1:0][1*32-1:0];
+    TYPE bias4[16-1:0];
+    TYPE weights5[32-1:0][3-1:0][3*16-1:0];
+    TYPE bias5[32-1:0];
+    TYPE weights6[16-1:0][1-1:0][1*32-1:0];
+    TYPE bias6[16-1:0];
+    TYPE weights7[32-1:0][3-1:0][3*16-1:0];
+    TYPE bias7[32-1:0];
+    TYPE weights8[16-1:0][1-1:0][1*32-1:0];
+    TYPE bias8[16-1:0];
+    TYPE weights9[10-1:0][1-1:0][1*16-1:0];
+    TYPE bias9[10-1:0];
+    logic reset_;
+    
+    assign reset = switch[0];
+     
+    logic finished;
+    TYPE pred[10-1:0];
+    
+    
+    TYPE img_og[3072-1:0];
+    cifar #(1024) I(img_og);
+    
+    genvar i, j, k;
+    TYPE img_rs[3-1:0][32-1:0][32-1:0];
+    generate for (i = 0; i < 3; i = i+1) begin
+        for (j = 0; j < 32; j = j+1) begin
+            for (k = 0; k < 32; k = k+1) begin
+                assign img[i][j][k] = img_og[32*32*i + 32*j + k];
+            end
+        end
+    end
+    
+    TYPE weights1_og[1*3*3*3-1:0];
+    TYPE bias1_og[1-1:0];
+    TYPE weights2_og[2*3*3*1-1:0];
+    TYPE bias2_og[2-1:0];
+    TYPE weights3_og[4*3*3*2-1:0];
+    TYPE bias3_og[4-1:0];
+    TYPE weights4_og[2*1*1*4-1:0];
+    TYPE bias4_og[2-1:0];
+    TYPE weights5_og[4*3*3*2-1:0];
+    TYPE bias5_og[4-1:0];
+    TYPE weights6_og[2*1*1*4-1:0];
+    TYPE bias6_og[2-1:0];
+    TYPE weights7_og[4*3*3*2-1:0];
+    TYPE bias7_og[4-1:0];
+    TYPE weights8_og[2*1*1*4-1:0];
+    TYPE bias8_og[2-1:0];
+    TYPE weights9_og[1*1*1*2-1:0];
+    TYPE bias9_og[1-1:0];
+    
+    parameters2 p(weights1_og, bias1_og, 
+                  weights2_og, bias2_og, 
+                  weights3_og, bias3_og, 
+                  weights4_og, bias4_og, 
+                  weights5_og, bias5_og, 
+                  weights6_og, bias6_og, 
+                  weights7_og, bias7_og, 
+                  weights8_og, bias8_og, 
+                  weights9_og, bias9_og);
+    
+    TYPE weights1_rs[1-1:0][3-1:0][3*3-1:0];
+    for (i = 0; i < 1; i = i+1) begin
+        for (j = 0; j < 3; j = j+1) begin
+            for (k = 0; k < 3*3; k++) begin
+                assign weights1[i][j][k] = weights1_og[3*3*3*i + j];
+            end
+        end
+    end
+    
+    TYPE weights2_rs[2-1:0][3-1:0][3*1-1:0];
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 3; j = j+1) begin
+            for (k = 0; k < 3*1; k++) begin
+                assign weights2[i][j][k] = weights2_og[3*3*1*i + j];
+            end
+        end
+    end
+    
+    TYPE weights3_rs[4-1:0][3-1:0][3*2-1:0];
+    for (i = 0; i < 4; i = i+1) begin
+        for (j = 0; j < 3; j = j+1) begin
+            for (k = 0; k < 3*2; k++) begin
+                assign weights3[i][j][k] = weights3_og[3*3*2*i + j];
+            end
+        end
+    end
+    
+    TYPE weights4_rs[2-1:0][1-1:0][1*4-1:0];
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 1; j = j+1) begin
+            for (k = 0; k < 1*4; k++) begin
+                assign weights4[i][j][k] = weights4_og[1*1*4*i + j];
+            end
+        end
+    end
+        
+    TYPE weights5_rs[4-1:0][3-1:0][3*2-1:0];
+    for (i = 0; i < 4; i = i+1) begin
+        for (j = 0; j < 3; j = j+1) begin
+            for (k = 0; k < 3*2; k++) begin
+                assign weights5[i][j][k] = weights5_og[3*3*2*i + j];
+            end
+        end
+    end
+        
+    TYPE weights6_rs[2-1:0][1-1:0][1*4-1:0];
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 1; j = j+1) begin
+            for(k = 0; k < 1*4; k = k+1) begin
+                assign weights6[i][j][k] = weights6_og[1*4*i + j];
+            end
+        end
+    end
+        
+    TYPE weights7_rs[4-1:0][3-1:0][3*2-1:0];
+    for (i = 0; i < 4; i = i+1) begin
+        for (j = 0; j < 3; j = j+1) begin
+            for (k = 0; k < 3*2; k++) begin
+                assign weights7[i][j][k] = weights7_og[3*3*2*i + j];
+            end
+        end
+    end
+        
+    TYPE weights8_rs[2-1:0][1-1:0][1*4-1:0];
+    for (i = 0; i < 2; i = i+1) begin
+        for (j = 0; j < 1; j = j+1) begin
+            for(k = 0; k < 1*4; k+=1) begin
+                assign weights8[i][j][k] = weights8_og[1*4*i + j];
+            end
+        end
+    end
+        
+    TYPE weights9_rs[1-1:0][1-1:0][1*2-1:0];
+    for (i = 0; i < 1; i = i+1) begin
+        for (j = 0; j < 1; j = j+1) begin
+            for (k = 0; k < 1*2; k++) begin
+                assign weights9[i][j][k] = weights9_og[1*1*2*i + j];
+            end
+        end
+    end endgenerate
+
+    network_opt #(32, 32, 1024) no(.*);
+
+    assign led[0] = pred[0];
+
+endmodule: topq
 
 module top_opt #(parameter outD = 10, parameter N = 0)
     (output TYPE pred[outD-1:0]);

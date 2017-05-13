@@ -160,8 +160,6 @@ module parameters2(
     output TYPE weights9[2-1:0],
     output TYPE bias9[1-1:0]);
 
-
-
 assign weights1 = {8'sd71, 8'sd233, -8'sd178, -8'sd202, 8'sd177, 8'sd221, 8'sd109, -8'sd41, 8'sd201, 8'sd34, -8'sd128, -8'sd11, 8'sd234, 8'sd36, 8'sd112, 8'sd251, 8'sd203, -8'sd182, 8'sd164, -8'sd24, -8'sd177, -8'sd112, -8'sd162, -8'sd142, 8'sd46, 8'sd77, -8'sd74};
 assign bias1 = {-8'sd50};
 
